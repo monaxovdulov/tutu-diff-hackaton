@@ -7,7 +7,8 @@ export class TripOptionCardElement extends LitElement {
     route: { attribute: false },
     selected: { type: Boolean, reflect: true },
     loading: { type: Boolean, reflect: true },
-    disabled: { type: Boolean, reflect: true }
+    disabled: { type: Boolean, reflect: true },
+    density: { type: String, reflect: true }
   };
 
   static override styles = css`
@@ -34,6 +35,11 @@ export class TripOptionCardElement extends LitElement {
     .skeleton { animation: pulse 1.3s ease-in-out infinite; background: #f2e9e5; border-radius: 999px; height: 8px; width: 72%; }
     .skeleton:last-child { width: 48%; }
     .note { color: #397258; font-size: 13px; font-weight: 650; margin: 10px 0 0; }
+    :host([density="minimal"]) .card { border-radius: 16px; padding: 13px 14px; }
+    :host([density="minimal"]) h3 { font-size: 15px; }
+    :host([density="minimal"]) .price { font-size: 16px; }
+    :host([density="minimal"]) .times { font-size: 18px; margin-top: 8px; }
+    :host([density="minimal"]) .subtitle { font-size: 12px; }
     @keyframes pulse { 50% { opacity: .42; } }
     @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
   `;
@@ -42,18 +48,20 @@ export class TripOptionCardElement extends LitElement {
   selected = false;
   loading = false;
   disabled = false;
+  density: 'regular' | 'minimal' = 'regular';
 
   protected override render(): TemplateResult | typeof nothing {
     if (!this.route) return nothing;
     const status = this.loading ? "enriching" : this.route.analysisStatus;
+    const showDetails = this.density !== 'minimal';
     return html`
       <button class="card" type="button" ?disabled=${this.disabled} aria-pressed=${String(this.selected)} @click=${this._select}>
         <div class="top"><h3>${this.route.title}</h3><span class="price">${formatPrice(this.route.price)}</span></div>
         <div class="times"><span>${this.route.departureTime}</span><span class="arrow" aria-hidden="true">→</span><span>${this.route.arrivalTime}</span></div>
         <p class="subtitle">${this.route.subtitle}</p>
         ${status === "enriching" ? html`<div class="skeletons" aria-label="Дополняем детали"><span class="skeleton"></span><span class="skeleton"></span></div>` : nothing}
-        ${status === "ready" && this.route.impacts.length ? html`<div class="impacts">${this.route.impacts.map((impact) => this._renderImpact(impact))}</div>` : nothing}
-        ${this.route.recommendationNote ? html`<p class="note">${this.route.recommendationNote}</p>` : nothing}
+        ${showDetails && status === "ready" && this.route.impacts.length ? html`<div class="impacts">${this.route.impacts.map((impact) => this._renderImpact(impact))}</div>` : nothing}
+        ${showDetails && this.route.recommendationNote ? html`<p class="note">${this.route.recommendationNote}</p>` : nothing}
       </button>
     `;
   }

@@ -1,4 +1,5 @@
 import './components/presentation-story-rail';
+import './components/presentation-landing-card';
 import { mountTutuDiffWidget } from './index';
 import {
   PRESENTATION_STEPS,
@@ -17,6 +18,10 @@ const initialStep = requestedStep && PRESENTATION_STEPS.includes(requestedStep)
   : 'difference';
 const target = document.querySelector<HTMLElement>('.demo-widget');
 const storyRail = document.querySelector('presentation-story-rail');
+const landingCard = document.querySelector<HTMLElement & {
+  step: PresentationStep;
+  experience: Experience;
+}>('presentation-landing-card');
 const stepsShell = document.querySelector<HTMLElement>('.demo-steps');
 const experienceButtons = document.querySelectorAll<HTMLButtonElement>(
   '[data-experience]',
@@ -42,6 +47,10 @@ const updateUrl = (
 
 const renderLandingState = (): void => {
   if (storyRail) storyRail.step = widget.presentationStep;
+  if (landingCard) {
+    landingCard.step = widget.presentationStep;
+    landingCard.experience = widget.experience;
+  }
   if (stepsShell) stepsShell.hidden = widget.experience === 'live';
 
   for (const button of experienceButtons) {

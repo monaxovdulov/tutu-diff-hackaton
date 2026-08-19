@@ -4,6 +4,7 @@ export function widgetIcon(name: string, size = 20): TemplateResult {
   const paths: Record<string, TemplateResult> = {
     message: svg`<path d="M5 5h14v10H9l-4 4V5Z"/>`,
     brand: svg`<path d="M5 12h14M12 5l7 7-7 7"/>`,
+    train: svg`<path d="M7 4h10a2 2 0 0 1 2 2v8a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Zm0 6h10M8 20l2-3m6 0 2 3M8 7h3m2 0h3"/>`,
     minus: svg`<path d="M5 12h14"/>`,
     close: svg`<path d="m6 6 12 12M18 6 6 18"/>`,
     send: svg`<path d="m4 12 16-8-5 16-3-6-8-2Zm8 2 8-10"/>`,

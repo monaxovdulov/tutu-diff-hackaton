@@ -6,6 +6,7 @@ export class PresentationComparisonBoardElement extends LitElement {
   static override properties = {
     routes: { attribute: false },
     excludedRouteIds: { attribute: false },
+    density: { type: String, reflect: true },
   };
 
   static override styles = css`
@@ -18,6 +19,7 @@ export class PresentationComparisonBoardElement extends LitElement {
 
   routes: readonly TripRoute[] = [];
   excludedRouteIds: readonly string[] = [];
+  density: 'regular' | 'minimal' = 'regular';
 
   protected override render(): TemplateResult {
     return html`<div class="board">
@@ -30,6 +32,7 @@ export class PresentationComparisonBoardElement extends LitElement {
             .selected=${Boolean(route.recommendationNote)}
             .loading=${route.analysisStatus === 'enriching'}
             .disabled=${false}
+            .density=${this.density}
           ></trip-option-card>
         </div>`;
       })}

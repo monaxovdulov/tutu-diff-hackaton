@@ -14,6 +14,7 @@
 - [ADR-006 · architecture · Виджет получает продуктовые события через SSE](006-architecture-widget-sse.md)
 - [ADR-007 · architecture · Как передаём состояние поездки между слоями](007-architecture-state-contracts-and-runtime-collections.md)
 - [ADR-008 · product · Разделяем сценарий и свой запрос](008-product-scenario-and-live-modes.md)
+- [ADR-009 · product · Лендинг держит объяснение, виджет держит действие](009-product-landing-first-widget-shell.md)
 
 ## Когда читать
 

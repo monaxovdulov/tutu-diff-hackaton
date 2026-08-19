@@ -14,7 +14,6 @@ import {
 } from '../scenario/presentation-scenario';
 import "./trip-option-card";
 import './presentation-comparison-board';
-import './presentation-difference-summary';
 import { renderChatItem } from "./widget-message";
 
 export const TUTU_DIFF_WIDGET_TAG_NAME = "tutu-diff-widget";
@@ -109,7 +108,7 @@ export class TutuDiffWidgetElement extends LitElement {
     this._isOpen = false;
     this._isMinimized = false;
     this.removeAttribute("open");
-    void this.updateComplete.then(() => this.renderRoot.querySelector<HTMLButtonElement>(".launcher")?.focus());
+    void this.updateComplete.then(() => this.renderRoot.querySelector<HTMLButtonElement>(".launcher, .collapsed-card")?.focus());
   }
 
   minimize(): void {
@@ -131,9 +130,7 @@ export class TutuDiffWidgetElement extends LitElement {
     if (this.layout === 'presentation') return this._renderPresentation();
 
     return html`
-      <button class="launcher" part="launcher" type="button" aria-haspopup="dialog" aria-expanded=${String(this._isOpen)} ?hidden=${this._isOpen} @click=${this.open}>
-        ${widgetIcon("message")}<span>Туту Разница</span>
-      </button>
+      ${this._isOpen ? nothing : this._renderLauncher('Туту Разница')}
       <section class="panel" part="panel" role="dialog" aria-modal="false" aria-labelledby="tutu-widget-title" ?hidden=${!this._isOpen} @keydown=${this._handlePanelKeydown}>
         ${this._renderHeader()}
         <div class="body" part="body"><div class="message-viewport" part="message-viewport"><div class="content">${this._renderContent()}</div></div></div>
@@ -146,11 +143,10 @@ export class TutuDiffWidgetElement extends LitElement {
     const isScenario = this.experience === 'scenario';
     const scenarioState = getPresentationState(this.presentationStep);
 
+    if (!this._isOpen) return this._renderCollapsedLauncher();
+
     return html`
-      <button class="launcher" part="launcher" type="button" aria-haspopup="dialog" aria-expanded=${String(this._isOpen)} ?hidden=${this._isOpen} @click=${this.open}>
-        ${widgetIcon("message")}<span>Открыть Туту Разницу</span>
-      </button>
-      <section class="panel panel--presentation" part="panel" role="dialog" aria-modal="false" aria-labelledby="tutu-widget-title" ?hidden=${!this._isOpen} @keydown=${this._handlePanelKeydown}>
+      <section class="panel panel--presentation" part="panel" role="dialog" aria-modal="false" aria-labelledby="tutu-widget-title" @keydown=${this._handlePanelKeydown}>
         ${this._renderHeader()}
         ${isScenario
           ? this._renderScenario(scenarioState)
@@ -163,45 +159,39 @@ export class TutuDiffWidgetElement extends LitElement {
     `;
   }
 
+  private _renderLauncher(label: string): TemplateResult {
+    return html`<button class="launcher" part="launcher" type="button" aria-haspopup="dialog" aria-expanded="false" @click=${this.open}>
+      ${widgetIcon("message")}<span>${label}</span>
+    </button>`;
+  }
+
+  private _renderCollapsedLauncher(): TemplateResult {
+    return html`<button class="collapsed-card" part="collapsed" type="button" aria-haspopup="dialog" aria-expanded="false" @click=${this.open}>
+      <span class="collapsed-brand" aria-hidden="true">${widgetIcon("train", 22)}</span>
+      <span class="collapsed-copy"><strong>Туту Разница</strong><span>Виджет свернут. Лендинг остаётся на месте.</span></span>
+      <span class="collapsed-action">Открыть</span>
+    </button>`;
+  }
+
   private _renderScenario(state: TripWidgetState): TemplateResult {
     const step = this.presentationStep;
     const showsRoutes = step !== 'request';
-    const isDifference = step === 'difference';
     const isConstraint = step === 'constraint';
     const isRecommendation = step === 'recommendation';
 
-    return html`<div class="presentation-shell">
-      <p class="scenario-provenance">${presentationScenario.provenance}</p>
+    return html`<div class="presentation-shell presentation-shell--minimal">
       <div class="scenario-chat">
         ${state.messages.length
           ? html`<div class="messages">${state.messages.map(renderChatItem)}</div>`
           : nothing}
-        ${step === 'request' ? html`
-          <section class="scenario-context">
-            <strong>${presentationScenario.event.title}</strong>
-            <span>${presentationScenario.event.time}</span>
-            <span>${presentationScenario.event.place}</span>
-            <div class="request-items">${state.request?.items.map((item) => html`<span class="request-item">${item.text}</span>`)}</div>
-          </section>
-        ` : nothing}
         ${showsRoutes ? html`<presentation-comparison-board
           .routes=${state.routes}
           .excludedRouteIds=${isConstraint ? presentationScenario.excludedRouteIds : []}
+          density="minimal"
         ></presentation-comparison-board>` : nothing}
-        ${isDifference ? html`
-          <presentation-difference-summary
-            .priceDelta=${presentationScenario.difference.priceDelta}
-            .durationDeltaMinutes=${presentationScenario.difference.durationDeltaMinutes}
-            .totalCostDeltaMin=${presentationScenario.difference.totalCostDeltaMin}
-            .totalCostDeltaMax=${presentationScenario.difference.totalCostDeltaMax}
-          ></presentation-difference-summary>
-          <p class="estimate-note">* Такси Московский вокзал → BASE SPb: ${presentationScenario.taxiEstimate} — ${presentationScenario.taxiSource}.</p>
-        ` : nothing}
         ${state.progressText ? html`<div class="progress" role="status"><span class="progress-dot" aria-hidden="true"></span><span>${state.progressText}</span></div>` : nothing}
-        ${isDifference || isRecommendation ? html`
-          <p class="recommendation">${state.recommendation?.text}</p>
-        ` : nothing}
         ${isRecommendation ? html`
+          <p class="recommendation recommendation--compact">${state.recommendation?.text}</p>
           <button class="primary-action" type="button" @click=${() => this._setExperience('live')}>Попробовать свой запрос</button>
         ` : nothing}
       </div>
@@ -215,7 +205,7 @@ export class TutuDiffWidgetElement extends LitElement {
 
   private _renderHeader(): TemplateResult {
     return html`<header class="header" part="header">
-      <div class="brand-mark" part="brand-mark" aria-hidden="true">${widgetIcon("brand", 21)}</div>
+      <div class="brand-mark" part="brand-mark" aria-hidden="true">${widgetIcon("train", 21)}</div>
       <div class="title-row"><h2 id="tutu-widget-title" class="title">Туту Разница</h2><span class="beta">beta</span></div>
       <div class="header-actions">
         <button class="icon-button" type="button" aria-label="Свернуть" @click=${this.minimize}>${widgetIcon("minus")}</button>
@@ -240,12 +230,11 @@ export class TutuDiffWidgetElement extends LitElement {
   }
 
   private _renderIdle(): TemplateResult {
-    const selectedPrompts = INTAKE_PROMPTS.filter((prompt) => this._selectedIntakePrompts.includes(prompt.id));
     return html`
       <div class="intro">
-        <span class="intro-kicker">Начнём с главного</span>
-        <h3>Соберём поездку без неприятных сюрпризов</h3>
-        <p>Укажите маршрут и дату. Остальное можно выбрать подсказками — или написать своими словами.</p>
+        <span class="intro-kicker">Свой запрос</span>
+        <h3>Куда едем?</h3>
+        <p>Маршрут, дата и пару ограничений. Подробности продукта — на лендинге рядом.</p>
       </div>
       <form class="intake" @submit=${this._handleIntakeSubmit}>
         <div class="field-group field-group--route">
@@ -264,34 +253,16 @@ export class TutuDiffWidgetElement extends LitElement {
           <input data-intake-field="date" type="date" .value=${this._intakeDate} @input=${this._handleDateInput} />
         </label>
         <fieldset class="prompt-picker">
-          <legend>Что важно в поездке?</legend>
+          <legend>Что важно?</legend>
           <div class="prompt-options">
             ${INTAKE_PROMPTS.map((prompt) => html`
               <button class="prompt" type="button" aria-pressed=${String(this._selectedIntakePrompts.includes(prompt.id))} @click=${() => this._toggleIntakePrompt(prompt.id)}>${prompt.label}</button>
             `)}
           </div>
         </fieldset>
-        <section class="intake-preview" aria-live="polite" aria-label="Собранный запрос">
-          <div class="preview-heading">
-            <div>
-              <span class="preview-kicker">Собранный запрос</span>
-              <h4>${this._intakeRouteTitle()}</h4>
-            </div>
-            <button class="preview-edit" type="button" @click=${() => this._focusIntakeField("origin")}>Изменить</button>
-          </div>
-          <div class="request-items">
-            ${this._intakeDate
-              ? html`<button class="request-item" type="button" @click=${() => this._focusIntakeField("date")}>${this._formatIntakeDate(this._intakeDate)}</button>`
-              : html`<button class="request-item request-item--empty" type="button" @click=${() => this._focusIntakeField("date")}>Добавьте дату</button>`}
-            ${selectedPrompts.length
-              ? selectedPrompts.map((prompt) => html`<button class="request-item" type="button" @click=${() => this._toggleIntakePrompt(prompt.id)}>${prompt.label}</button>`)
-              : html`<span class="request-item request-item--empty">Без дополнительных условий</span>`}
-          </div>
-        </section>
         ${this._intakeError ? html`<p class="intake-error" role="alert">${this._intakeError}</p>` : nothing}
         <button class="primary-action primary-action--search" type="submit"><span>Искать сейчас</span><span aria-hidden="true">→</span></button>
       </form>
-      <p class="intake-note">Маршрут и дата обязательны. Подсказки можно менять в любой момент.</p>
     `;
   }
 
