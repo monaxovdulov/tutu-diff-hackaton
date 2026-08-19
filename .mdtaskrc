@@ -1,0 +1,8 @@
+{
+  "path": "tasks",
+  "files": {
+    "include": ["**/*.md"],
+    "exclude": ["README.md", "_archive.md"]
+  },
+  "archivePath": "_archive.md"
+}

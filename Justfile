@@ -5,6 +5,7 @@ prod_url := "https://tutu.apps.botops.ru/"
 caddy_container := "granit-staging-caddy-1"
 caddy_route_source := "deploy/tutu-diff.caddy"
 caddy_route_target := "/srv/botops/staging-overrides/tutu-diff.caddy"
+mdtask := "npm exec -- mdtask"
 
 default:
     @just --list
@@ -12,6 +13,18 @@ default:
 # Проверить TypeScript и собрать production-файлы локально.
 build:
     npm run build
+
+# Показать открытые задачи из спецификаций.
+tasks:
+    {{mdtask}} list
+
+# Показать одну задачу целиком.
+task id:
+    {{mdtask}} view {{id}}
+
+# Проверить формат и связи задач.
+tasks-check:
+    {{mdtask}} validate
 
 # Собрать image и заменить production-контейнер.
 up:
