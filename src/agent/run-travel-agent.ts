@@ -21,6 +21,9 @@ export async function runTravelAgent(message: string): Promise<TravelAgentResult
     if (!raw.includes('"type":"mcp_call"') || !raw.includes('"server_label":"tutu"')) {
       throw new Error("TravelAgent завершился без реального вызова Tutu MCP.");
     }
+    if (!raw.includes('"type":"web_search_call"')) {
+      throw new Error("TravelAgent завершился без реального web search.");
+    }
     if (context.differenceCalls < 1) {
       throw new Error("TravelAgent завершился без вызова difference.compare.");
     }

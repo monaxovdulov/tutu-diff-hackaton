@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { Agent } from "@openai/agents";
+import { Agent, webSearchTool } from "@openai/agents";
 import { travelAgentOutputSchema } from "./schemas";
 import { differenceCompareTool, type TravelAgentContext } from "../tools/difference-tool";
 import { createTutuMcpTool } from "../tools/tutu-mcp";
@@ -11,11 +11,14 @@ export function createTravelAgent(tutuMcpUrl: string) {
     name: "TravelAgent",
     model: "gpt-5.6",
     instructions,
-    tools: [createTutuMcpTool(tutuMcpUrl), differenceCompareTool],
+    tools: [
+      createTutuMcpTool(tutuMcpUrl),
+      webSearchTool({ searchContextSize: "low" }),
+      differenceCompareTool
+    ],
     outputType: travelAgentOutputSchema,
     modelSettings: {
       toolChoice: "auto"
     }
   });
 }
-
