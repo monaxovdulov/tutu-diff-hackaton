@@ -12,7 +12,7 @@
 - [ADR-004 · architecture · XState управляет только жизненным циклом TravelRun](004-architecture-xstate-travelrun-lifecycle.md)
 - [ADR-005 · architecture · Инструменты агента и внешние источники](005-architecture-agent-tools.md)
 - [ADR-006 · architecture · Виджет получает продуктовые события через SSE](006-architecture-widget-sse.md)
-- [ADR-007 · architecture · Одна форма данных и закрытые коллекции store](007-architecture-state-contracts-and-runtime-collections.md)
+- [ADR-007 · architecture · Как передаём состояние поездки между слоями](007-architecture-state-contracts-and-runtime-collections.md)
 
 ## Когда читать
 
