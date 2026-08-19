@@ -11,13 +11,13 @@ function publicError(error: unknown): string {
 }
 
 export function createTravelRun(message: string): CreateTravelRunResponse {
-  const run = travelRunStore.create(message);
+  const runId = travelRunStore.create();
   const searchingState = createSearchingProjection(message);
-  travelRunStore.setState(run.id, searchingState);
-  travelRunStore.publish(run.id, { type: "run.started", runId: run.id });
-  travelRunStore.publish(run.id, { type: "progress.updated", text: "Ищу подходящие варианты…" });
-  queueMicrotask(() => void executeTravelRun(run.id, message));
-  return { runId: run.id, status: "running" };
+  travelRunStore.setState(runId, searchingState);
+  travelRunStore.publish(runId, { type: "run.started", runId });
+  travelRunStore.publish(runId, { type: "progress.updated", text: "Ищу подходящие варианты…" });
+  queueMicrotask(() => void executeTravelRun(runId, message));
+  return { runId, status: "running" };
 }
 
 async function executeTravelRun(runId: string, message: string): Promise<void> {
@@ -48,4 +48,3 @@ async function executeTravelRun(runId: string, message: string): Promise<void> {
     travelRunStore.publish(runId, { type: "run.failed", message: publicError(error) });
   }
 }
-

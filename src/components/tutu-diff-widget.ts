@@ -363,7 +363,10 @@ export class TutuDiffWidgetElement extends LitElement {
     this._emit("tutu-message-submit", { text });
     this.sessionState = {
       phase: "searching",
-      request: { title: text.split(".", 1)[0]?.trim() || "Новая поездка", items: [{ text: "Запрос принят" }] },
+      request: {
+        title: text.split(".", 1)[0]?.trim() || "Новая поездка",
+        items: [{ text: "Запрос принят", field: null, value: null }]
+      },
       messages: [
         { id: `user-${generation}`, role: "user", text },
         { id: `assistant-${generation}`, role: "assistant", text: "Понял. Ищу реальные варианты…" }
@@ -371,7 +374,8 @@ export class TutuDiffWidgetElement extends LitElement {
       routes: [],
       selectedRouteId: null,
       progressText: "Подключаюсь к поиску…",
-      recommendation: null
+      recommendation: null,
+      errorText: null
     };
     void startTravelRun(
       text,

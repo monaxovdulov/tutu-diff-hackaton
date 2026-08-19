@@ -51,13 +51,11 @@ export async function handleTravelRunRoute(request: IncomingMessage, response: S
 
   const runMatch = url.pathname.match(/^\/api\/travel-runs\/([0-9a-f-]+)$/i);
   if (request.method === "GET" && runMatch?.[1]) {
-    const run = travelRunStore.get(runMatch[1]);
-    const status = travelRunStore.status(runMatch[1]);
-    if (!run || !status) json(response, 404, { message: "TravelRun не найден." });
-    else json(response, 200, { runId: run.id, status, state: run.state });
+    const snapshot = travelRunStore.snapshot(runMatch[1]);
+    if (!snapshot) json(response, 404, { message: "TravelRun не найден." });
+    else json(response, 200, { runId: snapshot.id, status: snapshot.status, state: snapshot.state });
     return true;
   }
 
   return false;
 }
-

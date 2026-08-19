@@ -3,10 +3,10 @@ import type { TripRoute, TripWidgetState } from "../domain/trip-widget-state";
 const request = {
   title: "Москва → Санкт-Петербург",
   items: [
-    { text: "24 мая" },
-    { text: "до 7 000 ₽" },
-    { text: "после концерта" },
-    { text: "без жёсткой ночной пересадки" }
+    { text: "24 мая", field: null, value: null },
+    { text: "до 7 000 ₽", field: null, value: null },
+    { text: "после концерта", field: null, value: null },
+    { text: "без жёсткой ночной пересадки", field: null, value: null }
   ]
 } as const;
 
@@ -28,7 +28,8 @@ const cheap: TripRoute = {
     items: ["Дешевле на 1 360 ₽", "+3 ч 50 мин в пути", "Ночной переезд", "Возможно такси после прибытия"],
     actionLabel: "Сравнить с Балансом",
     compareRouteId: "balance"
-  }
+  },
+  recommendationNote: null
 };
 
 const balance: TripRoute = {
@@ -46,7 +47,8 @@ const balance: TripRoute = {
     items: ["−3 ч 50 мин в дороге", "Прибытие днём", "Без ночного переезда", "Вероятно не понадобится такси"],
     actionLabel: "Сравнить с Комфортом",
     compareRouteId: "comfort"
-  }
+  },
+  recommendationNote: null
 };
 
 const comfort: TripRoute = {
@@ -64,7 +66,8 @@ const comfort: TripRoute = {
     items: ["Тише в салоне", "+20 мин в дороге", "Больше личного пространства"],
     actionLabel: "Сравнить с Балансом",
     compareRouteId: "balance"
-  }
+  },
+  recommendationNote: null
 };
 
 const base = (state: Partial<TripWidgetState>): TripWidgetState => ({
@@ -75,6 +78,7 @@ const base = (state: Partial<TripWidgetState>): TripWidgetState => ({
   selectedRouteId: null,
   progressText: null,
   recommendation: null,
+  errorText: null,
   ...state
 });
 

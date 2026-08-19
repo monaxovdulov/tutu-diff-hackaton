@@ -11,7 +11,7 @@ function writeEvent(response: ServerResponse, item: SequencedTravelRunEvent): vo
 }
 
 export function streamTravelRun(runId: string, response: ServerResponse): boolean {
-  if (!travelRunStore.get(runId)) return false;
+  if (!travelRunStore.has(runId)) return false;
 
   response.writeHead(200, {
     "Content-Type": "text/event-stream; charset=utf-8",
@@ -47,4 +47,3 @@ export function streamTravelRun(runId: string, response: ServerResponse): boolea
   response.on("close", close);
   return true;
 }
-

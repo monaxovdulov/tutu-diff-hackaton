@@ -24,8 +24,8 @@ export type TripImpact = {
 export type TripDifference = {
   headline: string;
   items: readonly string[];
-  actionLabel?: string;
-  compareRouteId?: string;
+  actionLabel: string | null;
+  compareRouteId: string | null;
 };
 
 export type TripRoute = {
@@ -38,14 +38,14 @@ export type TripRoute = {
   subtitle: string;
   analysisStatus: "basic" | "enriching" | "ready";
   impacts: readonly TripImpact[];
-  difference?: TripDifference;
-  recommendationNote?: string;
+  difference: TripDifference | null;
+  recommendationNote: string | null;
 };
 
 export type TripRequestItem = {
   text: string;
-  field?: string;
-  value?: string;
+  field: string | null;
+  value: string | null;
 };
 
 export type TripRequest = {
@@ -67,85 +67,112 @@ export type TripWidgetState = {
   selectedRouteId: string | null;
   progressText: string | null;
   recommendation: TripRecommendation | null;
-  errorText?: string | null;
+  errorText: string | null;
 };
 
-export type TripWidgetEvent = {
+type TripWidgetEventEnvelope = {
   id?: number | string;
-  type:
-    | "request.updated"
-    | "messages.updated"
-    | "routes.selected"
-    | "route.updated"
-    | "comparison.updated"
-    | "progress.updated"
-    | "recommendation.updated"
-    | "session.failed";
-  payload?: Record<string, unknown>;
 };
+
+type TripWidgetEventPayloads = {
+  "request.updated": {
+    request: TripRequest | null;
+    phase?: TripWidgetPhase;
+  };
+  "messages.updated": {
+    messages: readonly TripMessage[];
+    phase?: TripWidgetPhase;
+  };
+  "routes.selected": {
+    routeId: string | null;
+    phase?: TripWidgetPhase;
+  };
+  "route.updated": {
+    route: Partial<TripRoute> & Pick<TripRoute, "id">;
+    phase?: TripWidgetPhase;
+  };
+  "comparison.updated": {
+    routeId: string;
+    difference: TripDifference;
+    phase?: TripWidgetPhase;
+  };
+  "progress.updated": {
+    text: string | null;
+    phase?: TripWidgetPhase;
+  };
+  "recommendation.updated": {
+    recommendation: TripRecommendation | null;
+    selectedRouteId: string | null;
+    phase?: TripWidgetPhase;
+  };
+  "session.failed": {
+    message: string;
+  };
+};
+
+export type TripWidgetEvent = TripWidgetEventEnvelope & {
+  [Type in keyof TripWidgetEventPayloads]: {
+    type: Type;
+    payload: TripWidgetEventPayloads[Type];
+  };
+}[keyof TripWidgetEventPayloads];
 
 export function reduceTripWidgetState(state: TripWidgetState, event: TripWidgetEvent): TripWidgetState {
-  const payload = event.payload ?? {};
-
   switch (event.type) {
     case "request.updated":
       return {
         ...state,
-        request: (payload.request as TripRequest | null | undefined) ?? state.request,
-        phase: (payload.phase as TripWidgetPhase | undefined) ?? state.phase
+        request: event.payload.request,
+        phase: event.payload.phase ?? state.phase
       };
     case "messages.updated":
       return {
         ...state,
-        messages: (payload.messages as readonly TripMessage[] | undefined) ?? state.messages,
-        phase: (payload.phase as TripWidgetPhase | undefined) ?? state.phase
+        messages: event.payload.messages,
+        phase: event.payload.phase ?? state.phase
       };
     case "routes.selected":
       return {
         ...state,
-        selectedRouteId: (payload.routeId as string | null | undefined) ?? state.selectedRouteId,
-        phase: (payload.phase as TripWidgetPhase | undefined) ?? state.phase
+        selectedRouteId: event.payload.routeId,
+        phase: event.payload.phase ?? state.phase
       };
     case "route.updated": {
-      const route = payload.route as Partial<TripRoute> & Pick<TripRoute, "id">;
-      if (!route?.id) return state;
+      const { route } = event.payload;
       return {
         ...state,
         routes: state.routes.map((current) => current.id === route.id ? { ...current, ...route } : current),
-        phase: (payload.phase as TripWidgetPhase | undefined) ?? state.phase
+        phase: event.payload.phase ?? state.phase
       };
     }
     case "comparison.updated": {
-      const routeId = payload.routeId as string | undefined;
-      const difference = payload.difference as TripDifference | undefined;
-      if (!routeId || !difference) return state;
+      const { routeId, difference } = event.payload;
       return {
         ...state,
         routes: state.routes.map((route) => route.id === routeId ? { ...route, difference } : route),
-        phase: (payload.phase as TripWidgetPhase | undefined) ?? state.phase
+        phase: event.payload.phase ?? state.phase
       };
     }
     case "progress.updated":
       return {
         ...state,
-        progressText: (payload.text as string | null | undefined) ?? null,
-        phase: (payload.phase as TripWidgetPhase | undefined) ?? state.phase
+        progressText: event.payload.text,
+        phase: event.payload.phase ?? state.phase
       };
     case "recommendation.updated":
       return {
         ...state,
-        recommendation: (payload.recommendation as TripRecommendation | null | undefined) ?? state.recommendation,
-        selectedRouteId:
-          (payload.selectedRouteId as string | null | undefined) ?? state.selectedRouteId,
+        recommendation: event.payload.recommendation,
+        selectedRouteId: event.payload.selectedRouteId,
         progressText: null,
-        phase: (payload.phase as TripWidgetPhase | undefined) ?? "ready"
+        phase: event.payload.phase ?? "ready"
       };
     case "session.failed":
       return {
         ...state,
         phase: "error",
         progressText: null,
-        errorText: (payload.message as string | undefined) ?? "Не получилось обновить варианты. Попробуйте уточнить запрос."
+        errorText: event.payload.message
       };
   }
 }

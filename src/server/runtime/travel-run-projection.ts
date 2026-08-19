@@ -5,7 +5,7 @@ export function createSearchingProjection(message: string): TripWidgetState {
     phase: "searching",
     request: {
       title: message.split(".", 1)[0]?.trim() || "Новая поездка",
-      items: [{ text: "Запрос принят" }]
+      items: [{ text: "Запрос принят", field: null, value: null }]
     },
     messages: [
       { id: "user-1", role: "user", text: message },
@@ -14,7 +14,7 @@ export function createSearchingProjection(message: string): TripWidgetState {
     routes: [],
     selectedRouteId: null,
     progressText: "Ищу подходящие варианты…",
-    recommendation: null
+    recommendation: null,
+    errorText: null
   };
 }
-

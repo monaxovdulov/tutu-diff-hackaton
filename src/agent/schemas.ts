@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { TripRoute, TripWidgetState } from "../domain/trip-widget-state";
 import type { TravelAgentResult } from "../shared/travel-contracts";
 
 const impactSchema = z.object({
@@ -63,55 +62,12 @@ export const travelAgentOutputSchema = z.object({
   message: z.string().nullable()
 });
 
-function normalizeRoute(value: z.infer<typeof routeSchema>): TripRoute {
-  return {
-    id: value.id,
-    category: value.category,
-    title: value.title,
-    price: value.price,
-    departureTime: value.departureTime,
-    arrivalTime: value.arrivalTime,
-    subtitle: value.subtitle,
-    analysisStatus: value.analysisStatus,
-    impacts: value.impacts,
-    ...(value.difference ? {
-      difference: {
-        headline: value.difference.headline,
-        items: value.difference.items,
-        ...(value.difference.actionLabel ? { actionLabel: value.difference.actionLabel } : {}),
-        ...(value.difference.compareRouteId ? { compareRouteId: value.difference.compareRouteId } : {})
-      }
-    } : {}),
-    ...(value.recommendationNote ? { recommendationNote: value.recommendationNote } : {})
-  };
-}
-
-function normalizeWidgetState(value: z.infer<typeof widgetStateSchema>): TripWidgetState {
-  return {
-    phase: value.phase,
-    request: value.request ? {
-      title: value.request.title,
-      items: value.request.items.map((item) => ({
-        text: item.text,
-        ...(item.field ? { field: item.field } : {}),
-        ...(item.value ? { value: item.value } : {})
-      }))
-    } : null,
-    messages: value.messages,
-    routes: value.routes.map(normalizeRoute),
-    selectedRouteId: value.selectedRouteId,
-    progressText: value.progressText,
-    recommendation: value.recommendation,
-    errorText: value.errorText
-  };
-}
-
 export function parseTravelAgentResult(input: unknown): TravelAgentResult {
   const value = travelAgentOutputSchema.parse(input);
 
   if (value.status === "completed") {
     if (!value.widgetState || !value.summary) throw new Error("Агент вернул неполный итог поездки.");
-    const widgetState = normalizeWidgetState(value.widgetState);
+    const widgetState = value.widgetState;
     if (widgetState.routes.length < 2 || !widgetState.recommendation) {
       throw new Error("Агент не вернул минимум два варианта и рекомендацию.");
     }
@@ -123,7 +79,7 @@ export function parseTravelAgentResult(input: unknown): TravelAgentResult {
     return {
       status: "needs_input",
       question: value.question,
-      ...(value.widgetState ? { partialState: normalizeWidgetState(value.widgetState) } : {})
+      ...(value.widgetState ? { partialState: value.widgetState } : {})
     };
   }
 
@@ -131,7 +87,6 @@ export function parseTravelAgentResult(input: unknown): TravelAgentResult {
   return {
     status: "failed",
     message: value.message,
-    ...(value.widgetState ? { partialState: normalizeWidgetState(value.widgetState) } : {})
+    ...(value.widgetState ? { partialState: value.widgetState } : {})
   };
 }
-
