@@ -10,10 +10,28 @@ import { renderChatItem } from "./widget-message";
 
 export const TUTU_DIFF_WIDGET_TAG_NAME = "tutu-diff-widget";
 
+type IntakePrompt = {
+  id: string;
+  label: string;
+  phrase: string;
+};
+
+const INTAKE_PROMPTS: readonly IntakePrompt[] = [
+  { id: "budget", label: "Подешевле", phrase: "хочу подешевле" },
+  { id: "day", label: "Приехать днём", phrase: "важно приехать днём" },
+  { id: "event", label: "После события", phrase: "еду после события" },
+  { id: "night", label: "Без ночных пересадок", phrase: "без жёстких ночных пересадок" }
+];
+
 export class TutuDiffWidgetElement extends LitElement {
   static override properties = {
     sessionState: { attribute: false },
     _draft: { state: true },
+    _intakeOrigin: { state: true },
+    _intakeDestination: { state: true },
+    _intakeDate: { state: true },
+    _selectedIntakePrompts: { state: true },
+    _intakeError: { state: true },
     _selectedRouteId: { state: true },
     _expandedRouteId: { state: true },
     _isOpen: { state: true },
@@ -28,6 +46,11 @@ export class TutuDiffWidgetElement extends LitElement {
 
   sessionState: TripWidgetState = getTutuDemoState(1);
   private _draft = "";
+  private _intakeOrigin = "";
+  private _intakeDestination = "";
+  private _intakeDate = "";
+  private _selectedIntakePrompts: string[] = [];
+  private _intakeError: string | null = null;
   private _selectedRouteId: string | null = null;
   private _expandedRouteId: string | null = null;
   private _isOpen = false;
@@ -122,9 +145,59 @@ export class TutuDiffWidgetElement extends LitElement {
   }
 
   private _renderIdle(): TemplateResult {
-    const chips = ["Маршрут", "Даты", "Бюджет", "После события", "Без ночных пересадок"];
-    return html`<div class="intro"><h3>Найдём вариант без неприятных сюрпризов</h3><p>Расскажите о поездке свободным текстом — покажем не только билеты, но и разницу между ними.</p></div>
-      <div class="quick-replies">${chips.map((chip) => html`<button class="quick-reply" type="button" @click=${() => this._prefill(chip)}>${chip}</button>`)}</div>`;
+    const selectedPrompts = INTAKE_PROMPTS.filter((prompt) => this._selectedIntakePrompts.includes(prompt.id));
+    return html`
+      <div class="intro">
+        <span class="intro-kicker">Начнём с главного</span>
+        <h3>Соберём поездку без неприятных сюрпризов</h3>
+        <p>Укажите маршрут и дату. Остальное можно выбрать подсказками — или написать своими словами.</p>
+      </div>
+      <form class="intake" @submit=${this._handleIntakeSubmit}>
+        <div class="field-group field-group--route">
+          <label class="field">
+            <span>Откуда</span>
+            <input data-intake-field="origin" type="text" autocomplete="address-level2" placeholder="Москва" .value=${this._intakeOrigin} @input=${this._handleOriginInput} />
+          </label>
+          <span class="route-arrow" aria-hidden="true">→</span>
+          <label class="field">
+            <span>Куда</span>
+            <input data-intake-field="destination" type="text" autocomplete="address-level2" placeholder="Санкт-Петербург" .value=${this._intakeDestination} @input=${this._handleDestinationInput} />
+          </label>
+        </div>
+        <label class="field field--date">
+          <span>Дата поездки</span>
+          <input data-intake-field="date" type="date" .value=${this._intakeDate} @input=${this._handleDateInput} />
+        </label>
+        <fieldset class="prompt-picker">
+          <legend>Что важно в поездке?</legend>
+          <div class="prompt-options">
+            ${INTAKE_PROMPTS.map((prompt) => html`
+              <button class="prompt" type="button" aria-pressed=${String(this._selectedIntakePrompts.includes(prompt.id))} @click=${() => this._toggleIntakePrompt(prompt.id)}>${prompt.label}</button>
+            `)}
+          </div>
+        </fieldset>
+        <section class="intake-preview" aria-live="polite" aria-label="Собранный запрос">
+          <div class="preview-heading">
+            <div>
+              <span class="preview-kicker">Собранный запрос</span>
+              <h4>${this._intakeRouteTitle()}</h4>
+            </div>
+            <button class="preview-edit" type="button" @click=${() => this._focusIntakeField("origin")}>Изменить</button>
+          </div>
+          <div class="request-items">
+            ${this._intakeDate
+              ? html`<button class="request-item" type="button" @click=${() => this._focusIntakeField("date")}>${this._formatIntakeDate(this._intakeDate)}</button>`
+              : html`<button class="request-item request-item--empty" type="button" @click=${() => this._focusIntakeField("date")}>Добавьте дату</button>`}
+            ${selectedPrompts.length
+              ? selectedPrompts.map((prompt) => html`<button class="request-item" type="button" @click=${() => this._toggleIntakePrompt(prompt.id)}>${prompt.label}</button>`)
+              : html`<span class="request-item request-item--empty">Без дополнительных условий</span>`}
+          </div>
+        </section>
+        ${this._intakeError ? html`<p class="intake-error" role="alert">${this._intakeError}</p>` : nothing}
+        <button class="primary-action primary-action--search" type="submit"><span>Искать сейчас</span><span aria-hidden="true">→</span></button>
+      </form>
+      <p class="intake-note">Маршрут и дата обязательны. Подсказки можно менять в любой момент.</p>
+    `;
   }
 
   private _renderConversation(): TemplateResult {
@@ -178,7 +251,7 @@ export class TutuDiffWidgetElement extends LitElement {
 
   private _renderComposer(): TemplateResult {
     const active = this.sessionState.phase !== "error";
-    const placeholder = this.sessionState.phase === "idle" ? "Куда и как хотите поехать?" : "Измените условие или задайте вопрос…";
+    const placeholder = this.sessionState.phase === "idle" ? "Или напишите всё одним сообщением…" : "Измените условие или задайте вопрос…";
     return html`<div class="composer-shell"><form class="composer" @submit=${this._handleSubmit}>
       <label class="visually-hidden" for="tutu-widget-message">${placeholder}</label>
       <textarea id="tutu-widget-message" class="textarea" rows="1" maxlength="1200" placeholder=${placeholder} aria-label=${placeholder} .value=${this._draft} ?disabled=${!active} @input=${this._handleInput} @keydown=${this._handleTextareaKeydown}></textarea>
@@ -187,6 +260,7 @@ export class TutuDiffWidgetElement extends LitElement {
   }
 
   private _syncSnapshotUi(previous?: TripWidgetState): void {
+    if (this.sessionState?.phase === "idle" && previous && previous.phase !== "idle") this._resetIntake();
     const selected = this.sessionState?.selectedRouteId ?? null;
     this._selectedRouteId = selected;
     if (this.sessionState?.phase === "detail" && (!this._expandedRouteId || previous?.selectedRouteId !== selected)) {
@@ -219,7 +293,58 @@ export class TutuDiffWidgetElement extends LitElement {
   private _handleInput = (event: Event): void => { this._draft = (event.currentTarget as HTMLTextAreaElement).value; };
   private _handleTextareaKeydown = (event: KeyboardEvent): void => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); this._submitDraft(); } };
   private _handlePanelKeydown = (event: KeyboardEvent): void => { if (event.key === "Escape") { event.preventDefault(); this.close(); } };
-  private _prefill(text: string): void { this._draft = this._draft ? `${this._draft} ${text.toLowerCase()}` : text; void this.updateComplete.then(() => this.renderRoot.querySelector<HTMLTextAreaElement>(".textarea")?.focus()); }
+  private _handleOriginInput = (event: Event): void => { this._intakeOrigin = (event.currentTarget as HTMLInputElement).value; this._intakeError = null; };
+  private _handleDestinationInput = (event: Event): void => { this._intakeDestination = (event.currentTarget as HTMLInputElement).value; this._intakeError = null; };
+  private _handleDateInput = (event: Event): void => { this._intakeDate = (event.currentTarget as HTMLInputElement).value; this._intakeError = null; };
+  private _toggleIntakePrompt(id: string): void {
+    this._selectedIntakePrompts = this._selectedIntakePrompts.includes(id)
+      ? this._selectedIntakePrompts.filter((current) => current !== id)
+      : [...this._selectedIntakePrompts, id];
+  }
+  private _handleIntakeSubmit = (event: Event): void => {
+    event.preventDefault();
+    const origin = this._intakeOrigin.trim();
+    const destination = this._intakeDestination.trim();
+    if (!origin) return this._setIntakeError("Укажите город отправления.", "origin");
+    if (!destination) return this._setIntakeError("Укажите город прибытия.", "destination");
+    if (!this._intakeDate) return this._setIntakeError("Выберите дату поездки.", "date");
+
+    const selectedPrompts = INTAKE_PROMPTS.filter((prompt) => this._selectedIntakePrompts.includes(prompt.id));
+    const extra = this._draft.trim();
+    const text = [
+      `${origin} → ${destination}`,
+      `дата поездки: ${this._formatIntakeDate(this._intakeDate)} (${this._intakeDate})`,
+      selectedPrompts.length ? `важно: ${selectedPrompts.map((prompt) => prompt.phrase).join(", ")}` : "",
+      extra ? `дополнение: ${extra}` : ""
+    ].filter(Boolean).join(". ");
+    this._intakeError = null;
+    this._emit("tutu-message-submit", { text });
+    this._draft = "";
+  };
+  private _setIntakeError(message: string, field: "origin" | "destination" | "date"): void {
+    this._intakeError = message;
+    this._focusIntakeField(field);
+  }
+  private _focusIntakeField(field: "origin" | "destination" | "date"): void {
+    void this.updateComplete.then(() => this.renderRoot.querySelector<HTMLInputElement>(`[data-intake-field="${field}"]`)?.focus());
+  }
+  private _intakeRouteTitle(): string {
+    const origin = this._intakeOrigin.trim() || "Откуда";
+    const destination = this._intakeDestination.trim() || "куда";
+    return `${origin} → ${destination}`;
+  }
+  private _formatIntakeDate(value: string): string {
+    const date = new Date(`${value}T12:00:00`);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" }).format(date);
+  }
+  private _resetIntake(): void {
+    this._intakeOrigin = "";
+    this._intakeDestination = "";
+    this._intakeDate = "";
+    this._selectedIntakePrompts = [];
+    this._intakeError = null;
+  }
   private _submitDraft(): void { const text = this._draft.trim(); if (!text || this.sessionState.phase === "error") return; this._emit("tutu-message-submit", { text }); this._draft = ""; }
   private _requestEdit(field: string, value: string): void { this._emit("tutu-request-edit", { field, value }); }
   private _book(routeId: string): void { this._emit("tutu-book", { routeId }); }
