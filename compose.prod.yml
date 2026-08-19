@@ -1,0 +1,23 @@
+name: tutu-diff-prod
+
+services:
+  web:
+    image: tutu-diff-web:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      caddy:
+        aliases:
+          - tutu-diff-web
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+networks:
+  caddy:
+    external: true
+    name: granit-staging_default

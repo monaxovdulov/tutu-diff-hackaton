@@ -1,0 +1,5 @@
+tutu.apps.botops.ru {
+	tls force_automate
+	encode zstd gzip
+	reverse_proxy tutu-diff-web:80
+}

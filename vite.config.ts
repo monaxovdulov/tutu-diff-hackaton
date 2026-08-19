@@ -6,6 +6,7 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: {
+        page: "index.html",
         index: "src/index.ts",
         "tutu-diff-widget.esm": "src/tutu-diff-widget.esm.ts",
         loader: "src/loader.ts"
