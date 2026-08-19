@@ -3,6 +3,16 @@
 Здесь лежат короткие ADR — важные решения и причины, по которым мы их приняли.
 Это не дневник разработки: обычным правкам достаточно задачи, PRD или кода.
 
+
+## Принятые решения
+
+- [ADR-001 · product · Показываем сравнение по мере готовности](001-product-live-comparison.md)
+- [ADR-002 · technology · Используем pnpm](002-technology-pnpm.md)
+- [ADR-003 · architecture · Один TravelAgent на Agents SDK](003-architecture-agents-sdk-travel-agent.md)
+- [ADR-004 · architecture · XState управляет только жизненным циклом TravelRun](004-architecture-xstate-travelrun-lifecycle.md)
+- [ADR-005 · architecture · Инструменты агента и внешние источники](005-architecture-agent-tools.md)
+- [ADR-006 · architecture · Виджет получает продуктовые события через SSE](006-architecture-widget-sse.md)
+
 ## Когда читать
 
 Не загружай все ADR перед каждой задачей. Найди и прочитай связанные решения,

@@ -2,13 +2,15 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts --no-audit --no-fund
+RUN corepack enable
+
+COPY package.json pnpm-workspace.yaml ./
+RUN pnpm install --ignore-scripts --frozen-lockfile=false
 
 COPY index.html tsconfig.json vite.config.ts ./
 COPY src ./src
 
-RUN npm run build
+RUN pnpm build
 
 FROM nginx:1.27-alpine
 

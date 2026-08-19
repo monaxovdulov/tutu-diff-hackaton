@@ -3,13 +3,15 @@
 Здесь лежат маленькие рабочие спецификации. В каждой сначала описано, что меняем,
 а внизу находятся связанные задачи.
 
-Текущая область: [начало сценария](intake.md).
+Текущая область: [первый живой вертикальный слайс](vertical-slice.md).
+
+Предыдущая область: [начало сценария](intake.md).
 
 ## Команды
 
 ```bash
 just tasks
-just task TUTU-001
+just task TUTU-002
 just tasks-check
 ```
 
@@ -22,3 +24,13 @@ just tasks-check
 
 Новый файл создаём только тогда, когда задача уже не помещается по смыслу в
 существующий.
+
+## Package manager
+
+Используем `pnpm`:
+
+```bash
+pnpm exec mdtask list
+pnpm exec mdtask view TUTU-002
+pnpm exec mdtask validate
+```

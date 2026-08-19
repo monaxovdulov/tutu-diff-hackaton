@@ -10,6 +10,17 @@
 - Инструкции: `get_avia_instructions`, `get_rail_instructions`, `get_bus_instructions`, `get_etrain_instructions`, `get_hotels_instructions`, `get_multitransport_instructions`.
 - Результат: `create_checkout_link`, `fetch_resource`.
 
+
+## В текущей архитектуре
+
+Tutu MCP вызывает не браузер, а серверный TravelAgent через OpenAI Agents SDK.
+Виджет получает только нормализованные карточки и прогресс. Raw payload MCP не
+попадает в UI-контракт.
+
+Для первого живого слайса достаточно одного основного поиска и нормализации
+2–3 различающихся вариантов. Детали, seatmap и checkout link не вызываем, пока
+они не нужны для результата.
+
 ## Использование
 
 - Собери параметры до вызова и вызывай только нужный инструмент.
