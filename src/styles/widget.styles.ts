@@ -48,31 +48,27 @@ export const widgetStyles = css`
   .send-button { align-items: center; background: var(--sw-color-accent); border: 0; border-radius: 50%; color: #fff; cursor: pointer; display: inline-flex; flex: 0 0 auto; height: 38px; justify-content: center; padding: 0; width: 38px; } .send-button:disabled { cursor: default; opacity: .38; }
   :host([layout="presentation"]) { bottom: auto; left: auto; position: relative; right: auto; width: 100%; z-index: auto; }
   :host([layout="presentation"]) .panel { display: flex; }
-  .panel--presentation { height: auto; min-height: min(760px, calc(100dvh - 40px)); width: min(1180px, calc(100vw - 40px)); }
+  .panel--presentation { height: min(760px, calc(100dvh - 40px)); margin: 0 auto; width: min(560px, calc(100vw - 40px)); }
   .panel--presentation .header-actions { display: none; }
-  .experience-tabs { background: #fff5f0; border-bottom: 1px solid var(--sw-color-border-soft); display: flex; gap: 6px; padding: 10px 18px; }
+  .experience-tabs { background: #fff5f0; border-bottom: 1px solid var(--sw-color-border-soft); display: flex; gap: 6px; padding: 10px 14px; }
   .experience-tabs button { background: transparent; border: 0; border-radius: 999px; color: var(--sw-color-text-secondary); cursor: pointer; font-weight: 680; padding: 9px 15px; }
   .experience-tabs button[aria-selected="true"] { background: #292522; color: #fff; }
-  .presentation-shell { display: grid; gap: 20px; padding: 20px; }
-  .scenario-heading { align-items: flex-start; display: flex; gap: 24px; justify-content: space-between; }
-  .scenario-kicker { color: var(--sw-color-text-muted); font-size: 11px; font-weight: 720; letter-spacing: .05em; text-transform: uppercase; }
-  .scenario-heading h3 { font-size: clamp(28px, 4vw, 46px); letter-spacing: -.045em; line-height: 1; margin: 8px 0 10px; }
-  .scenario-heading p { color: var(--sw-color-text-secondary); line-height: 1.5; margin: 0; }
-  .scenario-restart { flex: 0 0 auto; margin: 0; width: auto; }
-  .scenario-request, .constraint-banner, .scenario-recommendation { background: #fff; border: 1px solid var(--sw-color-border-soft); border-radius: 20px; padding: 20px; }
-  .scenario-request h4 { font-size: 20px; margin: 0 0 14px; }
-  .constraint-banner { background: #fff0eb; border-color: #ffc7b9; }
-  .constraint-banner span, .scenario-recommendation span { color: var(--sw-color-text-muted); display: block; font-size: 11px; font-weight: 720; letter-spacing: .06em; margin-bottom: 7px; text-transform: uppercase; }
-  .constraint-banner strong, .scenario-recommendation strong { display: block; font-size: 21px; }
-  .constraint-banner p { color: var(--sw-color-text-secondary); margin: 7px 0 0; }
-  .scenario-recommendation { border-color: #f2c5b9; }
-  .estimate-note { color: var(--sw-color-text-muted); font-size: 12px; margin: -12px 3px 0; }
-  .scenario-actions { display: flex; justify-content: flex-end; }
-  .scenario-actions .primary-action { width: auto; }
-  .body--presentation-live { min-height: 620px; }
-  .body--presentation-live .message-viewport { padding: 24px; }
-  .body--presentation-live .content { margin: 0 auto; max-width: 720px; }
+  .presentation-shell { display: grid; flex: 1; gap: 13px; min-height: 0; overflow-y: auto; padding: 14px 16px 16px; scrollbar-width: thin; }
+  .scenario-meta { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
+  .scenario-meta span { color: var(--sw-color-text-muted); font-size: 10px; font-weight: 720; letter-spacing: .04em; text-transform: uppercase; }
+  .scenario-meta button, .scenario-back { background: transparent; border: 0; color: var(--sw-color-accent); cursor: pointer; font-size: 12px; font-weight: 680; padding: 0; }
+  .scenario-chat { display: grid; gap: 11px; }
+  .scenario-context { background: #fff; border: 1px solid var(--sw-color-border-soft); border-radius: 18px; display: grid; gap: 4px; padding: 14px; }
+  .scenario-context strong { font-size: 16px; }
+  .scenario-context > span { color: var(--sw-color-text-secondary); font-size: 13px; }
+  .scenario-context .request-items { margin-top: 8px; }
+  .estimate-note { color: var(--sw-color-text-muted); font-size: 11px; line-height: 1.4; margin: -4px 3px 0; }
+  .scenario-actions { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
+  .scenario-actions .primary-action { min-height: 42px; width: auto; }
+  .body--presentation-live { min-height: 0; }
+  .body--presentation-live .message-viewport { padding: 18px 16px 16px; }
+  .body--presentation-live .content { margin: 0; max-width: none; }
   @keyframes progress-pulse { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .progress-dot { animation: none; } }
-  @media (max-width: 640px) { :host { bottom: 0; left: 0; right: 0; } .panel { border: 0; border-radius: 0; height: 100dvh; max-height: none; width: 100vw; } :host([layout="presentation"]) .panel { height: auto; min-height: 100dvh; } .launcher { bottom: max(16px, env(safe-area-inset-bottom)); position: fixed; right: max(16px, env(safe-area-inset-right)); } .presentation-shell { padding: 16px; } .scenario-heading { display: grid; } .scenario-restart, .scenario-actions .primary-action { width: 100%; } }
+  @media (max-width: 640px) { :host { bottom: 0; left: 0; right: 0; } .panel { border: 0; border-radius: 0; height: 100dvh; max-height: none; width: 100vw; } :host([layout="presentation"]) .panel { height: 100dvh; } .launcher { bottom: max(16px, env(safe-area-inset-bottom)); position: fixed; right: max(16px, env(safe-area-inset-right)); } .presentation-shell { padding: 12px 14px 14px; } }
 `;

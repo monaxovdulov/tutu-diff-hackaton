@@ -35,14 +35,15 @@ TravelAgent на GPT-5.6
 
 ## Презентационная оболочка
 
-Широкий layout добавляет поверх живого виджета независимый `experience`:
+Presentation layout добавляет поверх живого виджета независимый `experience`:
 
 ```text
 scenario → нормализованный snapshot → шесть шагов → локальный пересчёт
 live     → Node API → XState TravelRun → TravelAgent → SSE
 ```
 
-`layout` определяет только компактную или широкую раскладку. `experience`
+`layout` выбирает обычное встраивание или презентационную оболочку. Внутри неё
+сохранён компактный чат с последовательным раскрытием состояний. `experience`
 выбирает сохранённый сценарий или живой run. `presentationStep`, provenance,
 событие и оценка такси принадлежат scenario-оболочке; `TripWidgetState` и
 `TravelRunSseEvent` не расширены. Поэтому открытый SSE остаётся подключённым при

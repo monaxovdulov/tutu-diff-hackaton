@@ -126,26 +126,81 @@ const constrainedState = buildState(
 const presentationStates: Record<PresentationStep, TripWidgetState> = {
   request: {
     ...initialState,
+    phase: 'conversation',
+    messages: [
+      {
+        id: 'scenario-user-request',
+        role: 'user',
+        text: 'Москва → Санкт-Петербург, 5 сентября. Хочу сэкономить и успеть на Река Фест к 17:00.',
+      },
+      {
+        id: 'scenario-assistant-request',
+        role: 'assistant',
+        text: 'Понял. Ищу поезда с прибытием на Московский вокзал до 15:00.',
+      },
+    ],
     routes: [],
     selectedRouteId: null,
     recommendation: null,
   },
   options: {
     ...initialState,
+    phase: 'results',
+    messages: [{
+      id: 'scenario-assistant-options',
+      role: 'assistant',
+      text: 'Нашёл два заметно разных варианта.',
+    }],
     routes: initialState.routes.map((route) => ({
       ...route,
+      analysisStatus: 'basic',
       impacts: [],
       recommendationNote: null,
     })),
+    progressText: 'Проверяю, что скрывается за ценой…',
   },
-  impacts: initialState,
-  difference: initialState,
+  impacts: {
+    ...initialState,
+    phase: 'enriching',
+    messages: [{
+      id: 'scenario-assistant-impacts',
+      role: 'assistant',
+      text: 'Ночной дешевле, но отправляется в 01:35. Дневная «Аврора» заметно быстрее.',
+    }],
+    routes: [
+      { ...nightRoute, recommendationNote: null },
+      { ...dayRoute, analysisStatus: 'enriching' },
+    ],
+    progressText: 'Считаю полную стоимость и разницу во времени…',
+  },
+  difference: {
+    ...initialState,
+    messages: [{
+      id: 'scenario-assistant-difference',
+      role: 'assistant',
+      text: 'Вот где выбор становится настоящим, а не только про цену билета.',
+    }],
+  },
   constraint: {
     ...initialState,
+    phase: 'recalculating',
+    messages: [{
+      id: 'scenario-user-constraint',
+      role: 'user',
+      text: 'Не хочу отправляться ночью.',
+    }],
     selectedRouteId: dayRoute.id,
     recommendation: constrainedState.recommendation,
+    progressText: 'Исключаю отправления с 00:00 до 05:59…',
   },
-  recommendation: constrainedState,
+  recommendation: {
+    ...constrainedState,
+    messages: [{
+      id: 'scenario-assistant-recommendation',
+      role: 'assistant',
+      text: 'Тогда ночной 100С больше не подходит. Пересчитал без нового поиска.',
+    }],
+  },
 };
 
 export const presentationScenario = {

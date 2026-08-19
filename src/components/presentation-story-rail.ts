@@ -12,11 +12,12 @@ export class PresentationStoryRailElement extends LitElement {
 
   static override styles = css`
     :host { display: block; }
-    nav { display: grid; gap: 6px; grid-template-columns: repeat(6, minmax(0, 1fr)); }
-    button { background: transparent; border: 0; border-top: 3px solid #eadbd4; color: #786b66; cursor: pointer; font: inherit; font-size: 12px; padding: 10px 4px 4px; text-align: left; }
-    button[aria-current='step'] { border-color: #ff765f; color: #292522; font-weight: 720; }
-    .number { display: block; font-size: 10px; margin-bottom: 3px; }
-    @media (max-width: 720px) { nav { display: flex; overflow-x: auto; } button { flex: 0 0 128px; } }
+    nav { display: flex; gap: 6px; overflow-x: auto; }
+    button { align-items: center; background: #f4e9e4; border: 0; border-radius: 999px; color: #786b66; cursor: pointer; display: inline-flex; flex: 0 0 30px; font: inherit; height: 30px; justify-content: center; padding: 0; }
+    button[aria-current='step'] { background: #292522; color: #fff; flex-basis: auto; font-weight: 720; gap: 6px; padding: 0 11px; }
+    .number { font-size: 10px; }
+    .label { display: none; font-size: 11px; white-space: nowrap; }
+    button[aria-current='step'] .label { display: inline; }
   `;
 
   step: PresentationStep = 'difference';
@@ -30,7 +31,7 @@ export class PresentationStoryRailElement extends LitElement {
           @click=${() => this._select(step)}
         >
           <span class="number">0${index + 1}</span>
-          ${PRESENTATION_STEP_LABELS[step]}
+          <span class="label">${PRESENTATION_STEP_LABELS[step]}</span>
         </button>
       `)}
     </nav>`;

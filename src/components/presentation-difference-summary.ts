@@ -10,12 +10,14 @@ export class PresentationDifferenceSummaryElement extends LitElement {
 
   static override styles = css`
     :host { display: block; }
-    section { background: #292522; border-radius: 22px; color: #fff; display: grid; gap: 18px; grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)); padding: 22px; }
-    h3 { font-size: 23px; letter-spacing: -.035em; margin: 0; }
+    section { background: #292522; border-radius: 18px; color: #fff; display: grid; gap: 13px; padding: 17px; }
+    h3 { font-size: 19px; letter-spacing: -.03em; margin: 0; }
     p { color: #d8ccc7; font-size: 13px; line-height: 1.4; margin: 6px 0 0; }
-    strong { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
-    span { color: #d8ccc7; display: block; font-size: 12px; margin-top: 5px; }
-    @media (max-width: 720px) { section { grid-template-columns: 1fr; } }
+    .facts { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fact { background: rgba(255, 255, 255, .08); border-radius: 12px; padding: 11px; }
+    .fact:last-child { grid-column: 1 / -1; }
+    strong { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+    span { color: #d8ccc7; display: block; font-size: 11px; margin-top: 4px; }
   `;
 
   priceDelta = 0;
@@ -33,9 +35,11 @@ export class PresentationDifferenceSummaryElement extends LitElement {
 
     return html`<section aria-label="Реальная разница">
       <div><h3>Реальная разница</h3><p>Дневной вариант против дешёвого ночного</p></div>
-      <div><strong>+${price}</strong><span>к цене билета</span></div>
-      <div><strong>−${hours} ч ${minutes} мин</strong><span>в дороге</span></div>
-      <div><strong>${totalMin}…${totalMax}</strong><span>разница полной стоимости*</span></div>
+      <div class="facts">
+        <div class="fact"><strong>+${price}</strong><span>к цене билета</span></div>
+        <div class="fact"><strong>−${hours} ч ${minutes} мин</strong><span>в дороге</span></div>
+        <div class="fact"><strong>${totalMin}…${totalMax}</strong><span>разница полной стоимости*</span></div>
+      </div>
     </section>`;
   }
 

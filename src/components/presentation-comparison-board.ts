@@ -10,11 +10,10 @@ export class PresentationComparisonBoardElement extends LitElement {
 
   static override styles = css`
     :host { display: block; }
-    .board { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+    .board { display: grid; gap: 9px; grid-template-columns: minmax(0, 1fr); }
     .route { min-width: 0; position: relative; }
     .route--excluded { opacity: .48; }
     .excluded { background: #392f2b; border-radius: 999px; color: #fff; font-size: 11px; font-weight: 700; left: 12px; padding: 6px 9px; position: absolute; top: 12px; z-index: 1; }
-    @media (max-width: 720px) { .board { grid-template-columns: 1fr; } }
   `;
 
   routes: readonly TripRoute[] = [];
@@ -29,6 +28,7 @@ export class PresentationComparisonBoardElement extends LitElement {
           <trip-option-card
             .route=${route}
             .selected=${Boolean(route.recommendationNote)}
+            .loading=${route.analysisStatus === 'enriching'}
             .disabled=${false}
           ></trip-option-card>
         </div>`;

@@ -9,6 +9,7 @@ import { widgetStyles } from "../styles/widget.styles";
 import { widgetIcon } from "../ui/icons";
 import {
   getPresentationState,
+  PRESENTATION_STEPS,
   presentationScenario,
   type PresentationStep,
 } from '../scenario/presentation-scenario';
@@ -177,62 +178,56 @@ export class TutuDiffWidgetElement extends LitElement {
 
   private _renderScenario(state: TripWidgetState): TemplateResult {
     const step = this.presentationStep;
-    const showsOptions = step !== 'request';
-    const showsImpacts = !['request', 'options'].includes(step);
-    const showsDifference = [
-      'difference',
-      'constraint',
-      'recommendation',
-    ].includes(step);
-    const isConstrained = step === 'constraint' || step === 'recommendation';
-    const routes = step === 'recommendation'
-      ? state.routes
-      : presentationScenario.initialState.routes;
-    const boardRoutes = showsImpacts
-      ? routes
-      : routes.map((route) => ({ ...route, impacts: [] }));
+    const stepIndex = PRESENTATION_STEPS.indexOf(step);
+    const previousStep = PRESENTATION_STEPS[stepIndex - 1];
+    const nextStep = PRESENTATION_STEPS[stepIndex + 1];
+    const showsRoutes = step !== 'request';
+    const isDifference = step === 'difference';
+    const isConstraint = step === 'constraint';
+    const isRecommendation = step === 'recommendation';
 
     return html`<div class="presentation-shell">
       <presentation-story-rail
         .step=${step}
         @tutu-presentation-step=${this._handlePresentationStep}
       ></presentation-story-rail>
-      <div class="scenario-heading">
-        <div>
-          <span class="scenario-kicker">${presentationScenario.provenance}</span>
-          <h3>${state.request?.title}</h3>
-          <p>${presentationScenario.event.title} · ${presentationScenario.event.time}<br />${presentationScenario.event.place}</p>
-        </div>
-        <button type="button" class="secondary-action scenario-restart" @click=${() => this._setPresentationStep('request')}>Показать путь сначала</button>
+      <div class="scenario-meta">
+        <span>${presentationScenario.provenance}</span>
+        ${stepIndex > 0 ? html`<button type="button" @click=${() => this._setPresentationStep('request')}>Показать сначала</button>` : nothing}
       </div>
-      ${step === 'request' ? html`
-        <section class="scenario-request">
-          <h4>Нужно успеть к событию и сначала сэкономить</h4>
-          <div class="request-items">${state.request?.items.map((item) => html`<span class="request-item">${item.text}</span>`)}</div>
-        </section>
-      ` : nothing}
-      ${isConstrained ? html`<section class="constraint-banner"><span>Новое условие</span><strong>Не отправляться ночью</strong><p>Отправления с 00:00 до 05:59 исключаем кодом, без модели и нового поиска.</p></section>` : nothing}
-      ${showsOptions ? html`<presentation-comparison-board
-        .routes=${boardRoutes}
-        .excludedRouteIds=${step === 'constraint' ? presentationScenario.excludedRouteIds : []}
-      ></presentation-comparison-board>` : nothing}
-      ${showsDifference ? html`
-        <presentation-difference-summary
-          .priceDelta=${presentationScenario.difference.priceDelta}
-          .durationDeltaMinutes=${presentationScenario.difference.durationDeltaMinutes}
-          .totalCostDeltaMin=${presentationScenario.difference.totalCostDeltaMin}
-          .totalCostDeltaMax=${presentationScenario.difference.totalCostDeltaMax}
-        ></presentation-difference-summary>
-        <p class="estimate-note">* Такси Московский вокзал → BASE SPb: ${presentationScenario.taxiEstimate} — ${presentationScenario.taxiSource}.</p>
-      ` : nothing}
-      ${step === 'difference' || step === 'recommendation' ? html`
-        <section class="scenario-recommendation">
-          <span>${step === 'difference' ? 'Исходная рекомендация' : 'Рекомендация после нового условия'}</span>
-          <strong>${state.recommendation?.text}</strong>
-        </section>
-      ` : nothing}
+      <div class="scenario-chat">
+        ${state.messages.length
+          ? html`<div class="messages">${state.messages.map(renderChatItem)}</div>`
+          : nothing}
+        ${step === 'request' ? html`
+          <section class="scenario-context">
+            <strong>${presentationScenario.event.title}</strong>
+            <span>${presentationScenario.event.time}</span>
+            <span>${presentationScenario.event.place}</span>
+            <div class="request-items">${state.request?.items.map((item) => html`<span class="request-item">${item.text}</span>`)}</div>
+          </section>
+        ` : nothing}
+        ${showsRoutes ? html`<presentation-comparison-board
+          .routes=${state.routes}
+          .excludedRouteIds=${isConstraint ? presentationScenario.excludedRouteIds : []}
+        ></presentation-comparison-board>` : nothing}
+        ${isDifference ? html`
+          <presentation-difference-summary
+            .priceDelta=${presentationScenario.difference.priceDelta}
+            .durationDeltaMinutes=${presentationScenario.difference.durationDeltaMinutes}
+            .totalCostDeltaMin=${presentationScenario.difference.totalCostDeltaMin}
+            .totalCostDeltaMax=${presentationScenario.difference.totalCostDeltaMax}
+          ></presentation-difference-summary>
+          <p class="estimate-note">* Такси Московский вокзал → BASE SPb: ${presentationScenario.taxiEstimate} — ${presentationScenario.taxiSource}.</p>
+        ` : nothing}
+        ${state.progressText ? html`<div class="progress" role="status"><span class="progress-dot" aria-hidden="true"></span><span>${state.progressText}</span></div>` : nothing}
+        ${isDifference || isRecommendation ? html`
+          <p class="recommendation">${state.recommendation?.text}</p>
+        ` : nothing}
+      </div>
       <div class="scenario-actions">
-        <button class="primary-action" type="button" @click=${() => this._setExperience('live')}>Попробовать свой запрос</button>
+        ${previousStep ? html`<button class="scenario-back" type="button" @click=${() => this._setPresentationStep(previousStep)}>Назад</button>` : html`<span></span>`}
+        ${nextStep ? html`<button class="primary-action" type="button" @click=${() => this._setPresentationStep(nextStep)}>Дальше</button>` : html`<button class="primary-action" type="button" @click=${() => this._setExperience('live')}>Попробовать свой запрос</button>`}
       </div>
     </div>`;
   }
