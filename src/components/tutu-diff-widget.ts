@@ -2,6 +2,8 @@ import { LitElement, html, nothing, type TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { getTutuDemoState } from "../fixtures/tutu-demo-states";
 import { reduceTripWidgetState, type TripRoute, type TripWidgetEvent, type TripWidgetState } from "../domain/trip-widget-state";
+import { startTravelRun } from "../client/travel-api";
+import type { TravelRunSseEvent } from "../shared/travel-contracts";
 import { messageStyles } from "../styles/message.styles";
 import { widgetStyles } from "../styles/widget.styles";
 import { widgetIcon } from "../ui/icons";
@@ -55,11 +57,19 @@ export class TutuDiffWidgetElement extends LitElement {
   private _expandedRouteId: string | null = null;
   private _isOpen = false;
   private _isMinimized = false;
+  private _travelEvents: EventSource | null = null;
+  private _travelRequestGeneration = 0;
 
   override connectedCallback(): void {
     super.connectedCallback();
     this._isOpen = this.hasAttribute("open");
     this._syncSnapshotUi();
+  }
+
+  override disconnectedCallback(): void {
+    this._travelEvents?.close();
+    this._travelEvents = null;
+    super.disconnectedCallback();
   }
 
   override attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
@@ -318,7 +328,7 @@ export class TutuDiffWidgetElement extends LitElement {
       extra ? `дополнение: ${extra}` : ""
     ].filter(Boolean).join(". ");
     this._intakeError = null;
-    this._emit("tutu-message-submit", { text });
+    this._startTravelRun(text);
     this._draft = "";
   };
   private _setIntakeError(message: string, field: "origin" | "destination" | "date"): void {
@@ -345,7 +355,70 @@ export class TutuDiffWidgetElement extends LitElement {
     this._selectedIntakePrompts = [];
     this._intakeError = null;
   }
-  private _submitDraft(): void { const text = this._draft.trim(); if (!text || this.sessionState.phase === "error") return; this._emit("tutu-message-submit", { text }); this._draft = ""; }
+  private _submitDraft(): void { const text = this._draft.trim(); if (!text || this.sessionState.phase === "error") return; this._startTravelRun(text); this._draft = ""; }
+  private _startTravelRun(text: string): void {
+    this._travelEvents?.close();
+    this._travelEvents = null;
+    const generation = ++this._travelRequestGeneration;
+    this._emit("tutu-message-submit", { text });
+    this.sessionState = {
+      phase: "searching",
+      request: { title: text.split(".", 1)[0]?.trim() || "Новая поездка", items: [{ text: "Запрос принят" }] },
+      messages: [
+        { id: `user-${generation}`, role: "user", text },
+        { id: `assistant-${generation}`, role: "assistant", text: "Понял. Ищу реальные варианты…" }
+      ],
+      routes: [],
+      selectedRouteId: null,
+      progressText: "Подключаюсь к поиску…",
+      recommendation: null
+    };
+    void startTravelRun(
+      text,
+      (event) => { if (generation === this._travelRequestGeneration) this._applyTravelRunEvent(event); },
+      (error) => { if (generation === this._travelRequestGeneration) this._showTravelError(error.message); }
+    ).then((source) => {
+      if (generation === this._travelRequestGeneration) this._travelEvents = source;
+      else source.close();
+    }).catch((error: unknown) => {
+      if (generation === this._travelRequestGeneration) {
+        this._showTravelError(error instanceof Error ? error.message : "Не удалось начать поиск.");
+      }
+    });
+  }
+  private _applyTravelRunEvent(event: TravelRunSseEvent): void {
+    switch (event.type) {
+      case "run.started":
+        return;
+      case "progress.updated":
+        this.sessionState = {
+          ...this.sessionState,
+          phase: this.sessionState.routes.length ? "enriching" : "searching",
+          progressText: event.text
+        };
+        return;
+      case "widget.state":
+      case "run.completed":
+        this.sessionState = event.state;
+        return;
+      case "run.waiting_for_user":
+        this.sessionState = {
+          ...this.sessionState,
+          phase: "conversation",
+          progressText: null,
+          messages: [
+            ...this.sessionState.messages,
+            { id: `question-${Date.now()}`, role: "assistant", text: event.question }
+          ]
+        };
+        return;
+      case "run.failed":
+        this._showTravelError(event.message);
+    }
+  }
+  private _showTravelError(message: string): void {
+    this.applyTripEvent({ type: "session.failed", payload: { message } });
+  }
   private _requestEdit(field: string, value: string): void { this._emit("tutu-request-edit", { field, value }); }
   private _book(routeId: string): void { this._emit("tutu-book", { routeId }); }
   private _emit(name: string, detail: Record<string, string>): void { this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true })); }

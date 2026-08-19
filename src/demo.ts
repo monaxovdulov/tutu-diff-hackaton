@@ -6,19 +6,6 @@ let current = Math.min(10, Math.max(1, Number(params.get("demoState")) || 1));
 const widget = mountTutuDiffWidget({ open: true, sessionState: getTutuDemoState(current) });
 const controls = document.querySelector<HTMLElement>(".demo-controls");
 
-widget.addEventListener("tutu-message-submit", (event) => {
-  const text = (event as CustomEvent<{ text?: string }>).detail.text?.trim();
-  if (!text) return;
-  const conversation = getTutuDemoState(2);
-  widget.sessionState = {
-    ...conversation,
-    messages: [
-      { id: "intake-user", role: "user", text },
-      { id: "intake-assistant", role: "assistant", text: "Понял вас. Начинаю искать подходящие варианты…" }
-    ]
-  };
-});
-
 function renderControls(): void {
   if (!controls) return;
   controls.replaceChildren(...Array.from({ length: 10 }, (_, index) => {
