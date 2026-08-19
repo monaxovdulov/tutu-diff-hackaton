@@ -1,0 +1,37 @@
+{
+  "tool": "search_rail",
+  "parameters": {
+    "origin": "Москва",
+    "destination": "Санкт-Петербург",
+    "departure_date": "2026-09-05",
+    "passengers": 1,
+    "page": 1,
+    "page_size": 30,
+    "sort": "price_asc",
+    "direct_only": true,
+    "view": "compact"
+  },
+  "capturedAt": "2026-08-19T17:09:39.506Z",
+  "offers": [
+    {
+      "offerId": "bb6d169c1deb5a1e2aeaa1266e71e25d",
+      "trainNumber": "100С",
+      "departureStation": "Москва — Восточный вокзал (2001025)",
+      "arrivalStation": "Санкт-Петербург — Московский вокзал (2004001)",
+      "departureAt": "2026-09-05T01:35:00+03:00",
+      "arrivalAt": "2026-09-05T10:46:00+03:00",
+      "durationMinutes": 551,
+      "price": { "amount": 3200.57, "currency": "RUB" }
+    },
+    {
+      "offerId": "31f6cb698685d96289e753c5c15aa39e",
+      "trainNumber": "742У",
+      "departureStation": "Москва — Ленинградский вокзал (2006004)",
+      "arrivalStation": "Санкт-Петербург — Московский вокзал (2004001)",
+      "departureAt": "2026-09-05T06:00:00+03:00",
+      "arrivalAt": "2026-09-05T11:45:00+03:00",
+      "durationMinutes": 345,
+      "price": { "amount": 3615.38, "currency": "RUB" }
+    }
+  ]
+}

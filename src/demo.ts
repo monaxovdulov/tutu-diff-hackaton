@@ -1,29 +1,54 @@
-import { mountTutuDiffWidget } from "./index";
-import { getTutuDemoState } from "./fixtures/tutu-demo-states";
+import { mountTutuDiffWidget } from './index';
+import {
+  PRESENTATION_STEPS,
+  type PresentationStep,
+} from './scenario/presentation-scenario';
 
 const params = new URLSearchParams(window.location.search);
-let current = Math.min(10, Math.max(1, Number(params.get("demoState")) || 1));
-const widget = mountTutuDiffWidget({ open: true, sessionState: getTutuDemoState(current) });
-const controls = document.querySelector<HTMLElement>(".demo-controls");
+const experience = params.get('experience') === 'live' ? 'live' : 'scenario';
+const requestedStep = params.get('step') as PresentationStep | null;
+const presentationStep = requestedStep && PRESENTATION_STEPS.includes(requestedStep)
+  ? requestedStep
+  : 'difference';
+const target = document.querySelector<HTMLElement>('.demo-widget');
+const widget = mountTutuDiffWidget({
+  target: target ?? document.body,
+  open: true,
+  position: 'inline',
+  layout: 'presentation',
+  experience,
+  presentationStep,
+});
 
-function renderControls(): void {
-  if (!controls) return;
-  controls.replaceChildren(...Array.from({ length: 10 }, (_, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = String(index + 1);
-    button.setAttribute("aria-label", `Показать состояние ${index + 1}`);
-    button.setAttribute("aria-current", String(current === index + 1));
-    button.addEventListener("click", () => {
-      current = index + 1;
-      widget.sessionState = getTutuDemoState(current);
-      const url = new URL(window.location.href);
-      url.searchParams.set("demoState", String(current));
-      history.replaceState(null, "", url);
-      renderControls();
-    });
-    return button;
-  }));
-}
+const updateUrl = (
+  nextExperience: 'live' | 'scenario',
+  nextStep: PresentationStep,
+): void => {
+  const url = new URL(window.location.href);
+  url.searchParams.set('experience', nextExperience);
+  url.searchParams.set('step', nextStep);
+  history.replaceState(null, '', url);
+};
 
-renderControls();
+widget.addEventListener('tutu-experience-change', (event) => {
+  const customEvent = event as CustomEvent<{
+    experience: 'live' | 'scenario';
+  }>;
+  updateUrl(customEvent.detail.experience, widget.presentationStep);
+});
+
+widget.addEventListener('tutu-presentation-step-change', (event) => {
+  const customEvent = event as CustomEvent<{ step: PresentationStep }>;
+  updateUrl(widget.experience, customEvent.detail.step);
+});
+
+window.addEventListener('popstate', () => {
+  const nextParams = new URLSearchParams(window.location.search);
+  widget.experience = nextParams.get('experience') === 'live'
+    ? 'live'
+    : 'scenario';
+  const nextStep = nextParams.get('step') as PresentationStep | null;
+  widget.presentationStep = nextStep && PRESENTATION_STEPS.includes(nextStep)
+    ? nextStep
+    : 'difference';
+});

@@ -7,7 +7,15 @@ import type { TravelRunSseEvent } from "../shared/travel-contracts";
 import { messageStyles } from "../styles/message.styles";
 import { widgetStyles } from "../styles/widget.styles";
 import { widgetIcon } from "../ui/icons";
+import {
+  getPresentationState,
+  presentationScenario,
+  type PresentationStep,
+} from '../scenario/presentation-scenario';
 import "./trip-option-card";
+import './presentation-comparison-board';
+import './presentation-difference-summary';
+import './presentation-story-rail';
 import { renderChatItem } from "./widget-message";
 
 export const TUTU_DIFF_WIDGET_TAG_NAME = "tutu-diff-widget";
@@ -28,6 +36,13 @@ const INTAKE_PROMPTS: readonly IntakePrompt[] = [
 export class TutuDiffWidgetElement extends LitElement {
   static override properties = {
     sessionState: { attribute: false },
+    layout: { type: String, reflect: true },
+    experience: { type: String, reflect: true },
+    presentationStep: {
+      type: String,
+      attribute: 'presentation-step',
+      reflect: true,
+    },
     _draft: { state: true },
     _intakeOrigin: { state: true },
     _intakeDestination: { state: true },
@@ -47,6 +62,9 @@ export class TutuDiffWidgetElement extends LitElement {
   }
 
   sessionState: TripWidgetState = getTutuDemoState(1);
+  layout: 'compact' | 'presentation' = 'compact';
+  experience: 'live' | 'scenario' = 'live';
+  presentationStep: PresentationStep = 'difference';
   private _draft = "";
   private _intakeOrigin = "";
   private _intakeDestination = "";
@@ -111,6 +129,8 @@ export class TutuDiffWidgetElement extends LitElement {
   }
 
   protected override render(): TemplateResult {
+    if (this.layout === 'presentation') return this._renderPresentation();
+
     return html`
       <button class="launcher" part="launcher" type="button" aria-haspopup="dialog" aria-expanded=${String(this._isOpen)} ?hidden=${this._isOpen} @click=${this.open}>
         ${widgetIcon("message")}<span>Туту Разница</span>
@@ -121,6 +141,100 @@ export class TutuDiffWidgetElement extends LitElement {
         ${this._renderComposer()}
       </section>
     `;
+  }
+
+  private _renderPresentation(): TemplateResult {
+    const isScenario = this.experience === 'scenario';
+    const scenarioState = getPresentationState(this.presentationStep);
+
+    return html`
+      <section class="panel panel--presentation" part="panel">
+        ${this._renderHeader()}
+        <div class="experience-tabs" role="tablist" aria-label="Режим">
+          <button
+            type="button"
+            role="tab"
+            aria-selected=${String(isScenario)}
+            @click=${() => this._setExperience('scenario')}
+          >Сценарий</button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected=${String(!isScenario)}
+            @click=${() => this._setExperience('live')}
+          >Свой запрос</button>
+        </div>
+        ${isScenario
+          ? this._renderScenario(scenarioState)
+          : html`<div class="body body--presentation-live">
+              <div class="message-viewport"><div class="content">
+                ${this._renderContent()}
+              </div></div>
+            </div>${this._renderComposer()}`}
+      </section>
+    `;
+  }
+
+  private _renderScenario(state: TripWidgetState): TemplateResult {
+    const step = this.presentationStep;
+    const showsOptions = step !== 'request';
+    const showsImpacts = !['request', 'options'].includes(step);
+    const showsDifference = [
+      'difference',
+      'constraint',
+      'recommendation',
+    ].includes(step);
+    const isConstrained = step === 'constraint' || step === 'recommendation';
+    const routes = step === 'recommendation'
+      ? state.routes
+      : presentationScenario.initialState.routes;
+    const boardRoutes = showsImpacts
+      ? routes
+      : routes.map((route) => ({ ...route, impacts: [] }));
+
+    return html`<div class="presentation-shell">
+      <presentation-story-rail
+        .step=${step}
+        @tutu-presentation-step=${this._handlePresentationStep}
+      ></presentation-story-rail>
+      <div class="scenario-heading">
+        <div>
+          <span class="scenario-kicker">${presentationScenario.provenance}</span>
+          <h3>${state.request?.title}</h3>
+          <p>${presentationScenario.event.title} · ${presentationScenario.event.time}<br />${presentationScenario.event.place}</p>
+        </div>
+        <button type="button" class="secondary-action scenario-restart" @click=${() => this._setPresentationStep('request')}>Показать путь сначала</button>
+      </div>
+      ${step === 'request' ? html`
+        <section class="scenario-request">
+          <h4>Нужно успеть к событию и сначала сэкономить</h4>
+          <div class="request-items">${state.request?.items.map((item) => html`<span class="request-item">${item.text}</span>`)}</div>
+        </section>
+      ` : nothing}
+      ${isConstrained ? html`<section class="constraint-banner"><span>Новое условие</span><strong>Не отправляться ночью</strong><p>Отправления с 00:00 до 05:59 исключаем кодом, без модели и нового поиска.</p></section>` : nothing}
+      ${showsOptions ? html`<presentation-comparison-board
+        .routes=${boardRoutes}
+        .excludedRouteIds=${step === 'constraint' ? presentationScenario.excludedRouteIds : []}
+      ></presentation-comparison-board>` : nothing}
+      ${showsDifference ? html`
+        <presentation-difference-summary
+          .priceDelta=${presentationScenario.difference.priceDelta}
+          .durationDeltaMinutes=${presentationScenario.difference.durationDeltaMinutes}
+          .totalCostDeltaMin=${presentationScenario.difference.totalCostDeltaMin}
+          .totalCostDeltaMax=${presentationScenario.difference.totalCostDeltaMax}
+        ></presentation-difference-summary>
+        <p class="estimate-note">* Такси Московский вокзал → BASE SPb: ${presentationScenario.taxiEstimate} — ${presentationScenario.taxiSource}.</p>
+      ` : nothing}
+      ${step === 'difference' || step === 'recommendation' ? html`
+        <section class="scenario-recommendation">
+          <span>${step === 'difference' ? 'Исходная рекомендация' : 'Рекомендация после нового условия'}</span>
+          <strong>${state.recommendation?.text}</strong>
+        </section>
+      ` : nothing}
+      <div class="scenario-actions">
+        <button class="primary-action" type="button" @click=${() => this._setExperience('live')}>Попробовать свой запрос</button>
+      </div>
+    </div>`;
   }
 
   protected override updated(): void {
@@ -259,15 +373,34 @@ export class TutuDiffWidgetElement extends LitElement {
       <button class="primary-action" type="button" @click=${() => this._book(route.id)}>${recommendation.ctaLabel}</button>`;
   }
 
-  private _renderComposer(): TemplateResult {
+  private _renderComposer(): TemplateResult | typeof nothing {
+    if (this.experience === 'scenario' || this.sessionState.phase === 'idle') {
+      return nothing;
+    }
     const active = this.sessionState.phase !== "error";
-    const placeholder = this.sessionState.phase === "idle" ? "Или напишите всё одним сообщением…" : "Измените условие или задайте вопрос…";
+    const placeholder = "Измените условие или задайте вопрос…";
     return html`<div class="composer-shell"><form class="composer" @submit=${this._handleSubmit}>
       <label class="visually-hidden" for="tutu-widget-message">${placeholder}</label>
       <textarea id="tutu-widget-message" class="textarea" rows="1" maxlength="1200" placeholder=${placeholder} aria-label=${placeholder} .value=${this._draft} ?disabled=${!active} @input=${this._handleInput} @keydown=${this._handleTextareaKeydown}></textarea>
       <button class="send-button" type="submit" aria-label="Отправить" ?disabled=${!active || !this._draft.trim()}>${widgetIcon("send", 19)}</button>
     </form></div>`;
   }
+
+  private _setExperience(experience: 'live' | 'scenario'): void {
+    this.experience = experience;
+    this._emit('tutu-experience-change', { experience });
+  }
+
+  private _setPresentationStep(step: PresentationStep): void {
+    this.presentationStep = step;
+    this._emit('tutu-presentation-step-change', { step });
+  }
+
+  private _handlePresentationStep = (
+    event: CustomEvent<{ step: PresentationStep }>,
+  ): void => {
+    this._setPresentationStep(event.detail.step);
+  };
 
   private _syncSnapshotUi(previous?: TripWidgetState): void {
     if (this.sessionState?.phase === "idle" && previous && previous.phase !== "idle") this._resetIntake();

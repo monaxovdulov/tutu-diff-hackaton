@@ -7,20 +7,14 @@
     <style>
       :root { font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #23211f; background: #fff8f4; }
       body { min-height: 100vh; margin: 0; background: radial-gradient(circle at 80% 10%, #ffd8ca 0, transparent 35%), #fff8f4; }
-      main { max-width: 760px; padding: 64px 28px; }
-      h1 { font-size: clamp(36px, 7vw, 72px); line-height: .96; margin: 0 0 24px; max-width: 650px; letter-spacing: -.05em; }
-      p { color: #6d625d; font-size: 18px; max-width: 540px; }
-      .demo-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
-      .demo-controls button { border: 1px solid #e4cbc2; border-radius: 999px; background: rgba(255,255,255,.78); color: #534943; cursor: pointer; padding: 9px 13px; }
-      .demo-controls button[aria-current="true"] { background: #ff765f; border-color: #ff765f; color: white; }
-      @media (max-width: 640px) { main { padding: 28px 18px 140px; } h1 { font-size: 44px; } }
+      main { margin: 0 auto; max-width: 1220px; padding: 20px; }
+      .demo-widget { width: 100%; }
+      @media (max-width: 640px) { main { padding: 0; } }
     </style>
   </head>
   <body>
     <main>
-      <h1>Поездка — это не только билет.</h1>
-      <p>«Туту Разница» показывает последствия каждого варианта и помогает выбрать то, что подходит именно сейчас.</p>
-      <nav class="demo-controls" aria-label="Демонстрационные состояния"></nav>
+      <div class="demo-widget"></div>
     </main>
     <script type="module" src="/src/demo.ts"></script>
   </body>

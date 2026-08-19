@@ -33,6 +33,28 @@ TravelAgent на GPT-5.6
 Главный принцип: **модель решает, какие данные нужны, код держит границы и
 считает проверяемые числа**.
 
+## Презентационная оболочка
+
+Широкий layout добавляет поверх живого виджета независимый `experience`:
+
+```text
+scenario → нормализованный snapshot → шесть шагов → локальный пересчёт
+live     → Node API → XState TravelRun → TravelAgent → SSE
+```
+
+`layout` определяет только компактную или широкую раскладку. `experience`
+выбирает сохранённый сценарий или живой run. `presentationStep`, provenance,
+событие и оценка такси принадлежат scenario-оболочке; `TripWidgetState` и
+`TravelRunSseEvent` не расширены. Поэтому открытый SSE остаётся подключённым при
+переходе в сценарий, а накопленный `sessionState` виден после возврата.
+
+Source provenance лежит вне frontend-бандла в
+`snapshots/presentation-source.json`. Браузер импортирует только нормализованные
+данные из `src/scenario/presentation-scenario.ts`.
+
+Production Compose состоит из `api` и `web`. nginx проксирует `/api/` в Node до
+SPA fallback. `OPENAI_API_KEY` передаётся только runtime environment API-сервиса.
+
 ## Что уже есть
 
 В репозитории уже есть:

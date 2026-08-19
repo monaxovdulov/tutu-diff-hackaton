@@ -19,6 +19,11 @@ export function mountTutuDiffWidget(options: MountTutuDiffWidgetOptions = {}): T
   if (options.open) element.setAttribute("open", "");
   if (options.theme) element.setAttribute("theme", options.theme);
   if (options.position) element.setAttribute("position", options.position);
+  if (options.layout) element.layout = options.layout;
+  if (options.experience) element.experience = options.experience;
+  if (options.presentationStep) {
+    element.presentationStep = options.presentationStep;
+  }
   (options.target ?? document.body).appendChild(element);
   return element;
 }
