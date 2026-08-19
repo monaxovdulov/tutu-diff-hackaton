@@ -180,6 +180,11 @@ const presentationStates: Record<PresentationStep, TripWidgetState> = {
       role: 'assistant',
       text: 'Вот где выбор становится настоящим, а не только про цену билета.',
     }],
+    routes: initialState.routes.map((route) => ({
+      ...route,
+      impacts: [],
+      recommendationNote: null,
+    })),
   },
   constraint: {
     ...initialState,
@@ -189,6 +194,11 @@ const presentationStates: Record<PresentationStep, TripWidgetState> = {
       role: 'user',
       text: 'Не хочу отправляться ночью.',
     }],
+    routes: initialState.routes.map((route) => ({
+      ...route,
+      impacts: [],
+      recommendationNote: null,
+    })),
     selectedRouteId: dayRoute.id,
     recommendation: constrainedState.recommendation,
     progressText: 'Исключаю отправления с 00:00 до 05:59…',
@@ -200,6 +210,10 @@ const presentationStates: Record<PresentationStep, TripWidgetState> = {
       role: 'assistant',
       text: 'Тогда ночной 100С больше не подходит. Пересчитал без нового поиска.',
     }],
+    routes: constrainedState.routes.map((route) => ({
+      ...route,
+      impacts: [],
+    })),
   },
 };
 

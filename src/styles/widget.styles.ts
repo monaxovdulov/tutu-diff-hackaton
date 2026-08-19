@@ -48,7 +48,8 @@ export const widgetStyles = css`
   .send-button { align-items: center; background: var(--sw-color-accent); border: 0; border-radius: 50%; color: #fff; cursor: pointer; display: inline-flex; flex: 0 0 auto; height: 38px; justify-content: center; padding: 0; width: 38px; } .send-button:disabled { cursor: default; opacity: .38; }
   :host([layout="presentation"]) { align-items: flex-start; bottom: auto; display: flex; justify-content: flex-end; left: auto; position: relative; right: auto; width: 100%; z-index: auto; }
   :host([layout="presentation"]) .panel { display: flex; }
-  .panel--presentation { height: min(760px, calc(100dvh - 40px)); width: min(620px, calc(100vw - 40px)); }
+  .panel--presentation { border-color: rgba(255,255,255,.78); box-shadow: 0 32px 100px rgba(69,36,80,.2), 0 12px 30px rgba(105,48,30,.12); height: min(820px, calc(100dvh - 40px)); width: min(680px, calc(100vw - 40px)); }
+  .panel--presentation .header { background: linear-gradient(115deg, #ffab8f 0%, #ff806c 54%, #b78ad9 125%); }
   .presentation-shell { display: grid; flex: 1; gap: 13px; min-height: 0; overflow-y: auto; padding: 14px 16px 16px; scrollbar-width: thin; }
   .scenario-provenance { color: var(--sw-color-text-muted); font-size: 10px; font-weight: 720; letter-spacing: .04em; margin: 0; text-transform: uppercase; }
   .scenario-chat { display: grid; gap: 11px; }
