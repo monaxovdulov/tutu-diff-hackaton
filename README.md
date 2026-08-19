@@ -6,7 +6,7 @@
 
 **Туту Разница** помогает увидеть эту разницу до покупки.
 
-<a href="https://tutu.apps.botops.ru/" target="_blank" rel="noopener noreferrer">Посмотреть демо</a>
+<a href="https://tutu.apps.botops.ru/" target="_blank" rel="noopener noreferrer">Посмотреть демо</a> *(открыть в новой вкладке: Ctrl/Cmd+клик)*
 
 ## Как это работает
 
