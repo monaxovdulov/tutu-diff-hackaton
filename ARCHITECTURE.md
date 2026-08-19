@@ -49,6 +49,10 @@ live     → Node API → XState TravelRun → TravelAgent → SSE
 `TravelRunSseEvent` не расширены. Поэтому открытый SSE остаётся подключённым при
 переходе в сценарий, а накопленный `sessionState` виден после возврата.
 
+На demo-странице выбор `experience` и `presentationStep` расположен в лендинге
+слева от виджета. Они передаются в публичные свойства Lit-компонента; сам shadow
+DOM отвечает только за чат, карточки и open/close-поведение.
+
 Source provenance лежит вне frontend-бандла в
 `snapshots/presentation-source.json`. Браузер импортирует только нормализованные
 данные из `src/scenario/presentation-scenario.ts`.

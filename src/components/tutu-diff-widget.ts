@@ -9,14 +9,12 @@ import { widgetStyles } from "../styles/widget.styles";
 import { widgetIcon } from "../ui/icons";
 import {
   getPresentationState,
-  PRESENTATION_STEPS,
   presentationScenario,
   type PresentationStep,
 } from '../scenario/presentation-scenario';
 import "./trip-option-card";
 import './presentation-comparison-board';
 import './presentation-difference-summary';
-import './presentation-story-rail';
 import { renderChatItem } from "./widget-message";
 
 export const TUTU_DIFF_WIDGET_TAG_NAME = "tutu-diff-widget";
@@ -149,22 +147,11 @@ export class TutuDiffWidgetElement extends LitElement {
     const scenarioState = getPresentationState(this.presentationStep);
 
     return html`
-      <section class="panel panel--presentation" part="panel">
+      <button class="launcher" part="launcher" type="button" aria-haspopup="dialog" aria-expanded=${String(this._isOpen)} ?hidden=${this._isOpen} @click=${this.open}>
+        ${widgetIcon("message")}<span>Открыть Туту Разницу</span>
+      </button>
+      <section class="panel panel--presentation" part="panel" role="dialog" aria-modal="false" aria-labelledby="tutu-widget-title" ?hidden=${!this._isOpen} @keydown=${this._handlePanelKeydown}>
         ${this._renderHeader()}
-        <div class="experience-tabs" role="tablist" aria-label="Режим">
-          <button
-            type="button"
-            role="tab"
-            aria-selected=${String(isScenario)}
-            @click=${() => this._setExperience('scenario')}
-          >Сценарий</button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected=${String(!isScenario)}
-            @click=${() => this._setExperience('live')}
-          >Свой запрос</button>
-        </div>
         ${isScenario
           ? this._renderScenario(scenarioState)
           : html`<div class="body body--presentation-live">
@@ -178,23 +165,13 @@ export class TutuDiffWidgetElement extends LitElement {
 
   private _renderScenario(state: TripWidgetState): TemplateResult {
     const step = this.presentationStep;
-    const stepIndex = PRESENTATION_STEPS.indexOf(step);
-    const previousStep = PRESENTATION_STEPS[stepIndex - 1];
-    const nextStep = PRESENTATION_STEPS[stepIndex + 1];
     const showsRoutes = step !== 'request';
     const isDifference = step === 'difference';
     const isConstraint = step === 'constraint';
     const isRecommendation = step === 'recommendation';
 
     return html`<div class="presentation-shell">
-      <presentation-story-rail
-        .step=${step}
-        @tutu-presentation-step=${this._handlePresentationStep}
-      ></presentation-story-rail>
-      <div class="scenario-meta">
-        <span>${presentationScenario.provenance}</span>
-        ${stepIndex > 0 ? html`<button type="button" @click=${() => this._setPresentationStep('request')}>Показать сначала</button>` : nothing}
-      </div>
+      <p class="scenario-provenance">${presentationScenario.provenance}</p>
       <div class="scenario-chat">
         ${state.messages.length
           ? html`<div class="messages">${state.messages.map(renderChatItem)}</div>`
@@ -224,10 +201,9 @@ export class TutuDiffWidgetElement extends LitElement {
         ${isDifference || isRecommendation ? html`
           <p class="recommendation">${state.recommendation?.text}</p>
         ` : nothing}
-      </div>
-      <div class="scenario-actions">
-        ${previousStep ? html`<button class="scenario-back" type="button" @click=${() => this._setPresentationStep(previousStep)}>Назад</button>` : html`<span></span>`}
-        ${nextStep ? html`<button class="primary-action" type="button" @click=${() => this._setPresentationStep(nextStep)}>Дальше</button>` : html`<button class="primary-action" type="button" @click=${() => this._setExperience('live')}>Попробовать свой запрос</button>`}
+        ${isRecommendation ? html`
+          <button class="primary-action" type="button" @click=${() => this._setExperience('live')}>Попробовать свой запрос</button>
+        ` : nothing}
       </div>
     </div>`;
   }
@@ -386,16 +362,6 @@ export class TutuDiffWidgetElement extends LitElement {
     this._emit('tutu-experience-change', { experience });
   }
 
-  private _setPresentationStep(step: PresentationStep): void {
-    this.presentationStep = step;
-    this._emit('tutu-presentation-step-change', { step });
-  }
-
-  private _handlePresentationStep = (
-    event: CustomEvent<{ step: PresentationStep }>,
-  ): void => {
-    this._setPresentationStep(event.detail.step);
-  };
 
   private _syncSnapshotUi(previous?: TripWidgetState): void {
     if (this.sessionState?.phase === "idle" && previous && previous.phase !== "idle") this._resetIntake();

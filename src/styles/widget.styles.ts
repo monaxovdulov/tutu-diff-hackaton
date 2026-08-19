@@ -46,17 +46,11 @@ export const widgetStyles = css`
   .composer-shell { background: rgba(255,250,247,.96); border-top: 1px solid var(--sw-color-border-soft); padding: 12px 14px 14px; } .composer { align-items: flex-end; background: #fff; border: 1px solid var(--sw-color-border-soft); border-radius: var(--sw-radius-input); display: flex; gap: 8px; padding: 7px 7px 7px 14px; }
   .textarea { background: transparent; border: 0; color: var(--sw-color-text-primary); flex: 1; line-height: 1.4; max-height: 112px; min-height: 28px; min-width: 0; outline: none; padding: 4px 0; resize: none; } .textarea::placeholder { color: #a39792; }
   .send-button { align-items: center; background: var(--sw-color-accent); border: 0; border-radius: 50%; color: #fff; cursor: pointer; display: inline-flex; flex: 0 0 auto; height: 38px; justify-content: center; padding: 0; width: 38px; } .send-button:disabled { cursor: default; opacity: .38; }
-  :host([layout="presentation"]) { bottom: auto; left: auto; position: relative; right: auto; width: 100%; z-index: auto; }
+  :host([layout="presentation"]) { align-items: flex-start; bottom: auto; display: flex; justify-content: flex-end; left: auto; position: relative; right: auto; width: 100%; z-index: auto; }
   :host([layout="presentation"]) .panel { display: flex; }
-  .panel--presentation { height: min(760px, calc(100dvh - 40px)); margin: 0 auto; width: min(560px, calc(100vw - 40px)); }
-  .panel--presentation .header-actions { display: none; }
-  .experience-tabs { background: #fff5f0; border-bottom: 1px solid var(--sw-color-border-soft); display: flex; gap: 6px; padding: 10px 14px; }
-  .experience-tabs button { background: transparent; border: 0; border-radius: 999px; color: var(--sw-color-text-secondary); cursor: pointer; font-weight: 680; padding: 9px 15px; }
-  .experience-tabs button[aria-selected="true"] { background: #292522; color: #fff; }
+  .panel--presentation { height: min(760px, calc(100dvh - 40px)); width: min(620px, calc(100vw - 40px)); }
   .presentation-shell { display: grid; flex: 1; gap: 13px; min-height: 0; overflow-y: auto; padding: 14px 16px 16px; scrollbar-width: thin; }
-  .scenario-meta { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
-  .scenario-meta span { color: var(--sw-color-text-muted); font-size: 10px; font-weight: 720; letter-spacing: .04em; text-transform: uppercase; }
-  .scenario-meta button, .scenario-back { background: transparent; border: 0; color: var(--sw-color-accent); cursor: pointer; font-size: 12px; font-weight: 680; padding: 0; }
+  .scenario-provenance { color: var(--sw-color-text-muted); font-size: 10px; font-weight: 720; letter-spacing: .04em; margin: 0; text-transform: uppercase; }
   .scenario-chat { display: grid; gap: 11px; }
   .scenario-context { background: #fff; border: 1px solid var(--sw-color-border-soft); border-radius: 18px; display: grid; gap: 4px; padding: 14px; }
   .scenario-context strong { font-size: 16px; }
