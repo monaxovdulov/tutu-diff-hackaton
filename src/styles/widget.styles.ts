@@ -218,8 +218,11 @@ export const widgetStyles = css`
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 16px 14px 14px;
-    scrollbar-width: thin;
+    scrollbar-width: none;
   }
+
+  .message-viewport::-webkit-scrollbar,
+  .presentation-shell::-webkit-scrollbar { display: none; }
 
   .content,
   .messages {
@@ -627,7 +630,7 @@ export const widgetStyles = css`
     min-height: 0;
     overflow-y: auto;
     padding: 14px;
-    scrollbar-width: thin;
+    scrollbar-width: none;
   }
 
   .presentation-shell--minimal {

@@ -1,4 +1,3 @@
-import './components/presentation-story-rail';
 import './components/presentation-landing-card';
 import { mountTutuDiffWidget } from './index';
 import {
@@ -17,15 +16,10 @@ const initialStep = requestedStep && PRESENTATION_STEPS.includes(requestedStep)
   ? requestedStep
   : 'difference';
 const target = document.querySelector<HTMLElement>('.demo-widget');
-const storyRail = document.querySelector('presentation-story-rail');
 const landingCard = document.querySelector<HTMLElement & {
   step: PresentationStep;
   experience: Experience;
 }>('presentation-landing-card');
-const stepsShell = document.querySelector<HTMLElement>('.demo-steps');
-const experienceButtons = document.querySelectorAll<HTMLButtonElement>(
-  '[data-experience]',
-);
 const widget = mountTutuDiffWidget({
   target: target ?? document.body,
   open: true,
@@ -46,16 +40,9 @@ const updateUrl = (
 };
 
 const renderLandingState = (): void => {
-  if (storyRail) storyRail.step = widget.presentationStep;
   if (landingCard) {
     landingCard.step = widget.presentationStep;
     landingCard.experience = widget.experience;
-  }
-  if (stepsShell) stepsShell.hidden = widget.experience === 'live';
-
-  for (const button of experienceButtons) {
-    const isSelected = button.dataset.experience === widget.experience;
-    button.setAttribute('aria-selected', String(isSelected));
   }
 };
 
@@ -70,17 +57,6 @@ const setStep = (step: PresentationStep, shouldUpdateUrl = true): void => {
   renderLandingState();
   if (shouldUpdateUrl) updateUrl(widget.experience, step);
 };
-
-for (const button of experienceButtons) {
-  button.addEventListener('click', () => {
-    setExperience(button.dataset.experience === 'live' ? 'live' : 'scenario');
-  });
-}
-
-storyRail?.addEventListener('tutu-presentation-step', (event) => {
-  const customEvent = event as CustomEvent<{ step: PresentationStep }>;
-  setStep(customEvent.detail.step);
-});
 
 widget.addEventListener('tutu-experience-change', (event) => {
   const customEvent = event as CustomEvent<{ experience: Experience }>;
