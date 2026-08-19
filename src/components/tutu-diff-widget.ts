@@ -232,7 +232,6 @@ export class TutuDiffWidgetElement extends LitElement {
   private _renderIdle(): TemplateResult {
     return html`
       <div class="intro">
-        <span class="intro-kicker">Свой запрос</span>
         <h3>Куда едем?</h3>
         <p>Маршрут, дата и пару ограничений. Подробности продукта — на лендинге рядом.</p>
       </div>
@@ -252,14 +251,16 @@ export class TutuDiffWidgetElement extends LitElement {
           <span>Дата поездки</span>
           <input data-intake-field="date" type="date" .value=${this._intakeDate} @input=${this._handleDateInput} />
         </label>
-        <fieldset class="prompt-picker">
-          <legend>Что важно?</legend>
+        <details class="prompt-picker">
+          <summary>Что важно?${this._selectedIntakePrompts.length
+            ? html` <span>${this._selectedIntakePrompts.length}</span>`
+            : nothing}</summary>
           <div class="prompt-options">
             ${INTAKE_PROMPTS.map((prompt) => html`
               <button class="prompt" type="button" aria-pressed=${String(this._selectedIntakePrompts.includes(prompt.id))} @click=${() => this._toggleIntakePrompt(prompt.id)}>${prompt.label}</button>
             `)}
           </div>
-        </fieldset>
+        </details>
         ${this._intakeError ? html`<p class="intake-error" role="alert">${this._intakeError}</p>` : nothing}
         <button class="primary-action primary-action--search" type="submit"><span>Искать сейчас</span><span aria-hidden="true">→</span></button>
       </form>

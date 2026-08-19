@@ -138,7 +138,7 @@ export const widgetStyles = css`
     box-shadow: var(--sw-shadow-panel);
     display: flex;
     flex-direction: column;
-    height: min(720px, calc(100dvh - 48px));
+    height: min(760px, calc(100dvh - 48px));
     overflow: hidden;
     width: min(410px, calc(100vw - 48px));
   }
@@ -148,10 +148,10 @@ export const widgetStyles = css`
     background: #ff9b83;
     border-bottom: 1px solid rgba(87,41,28,.08);
     display: grid;
-    gap: 10px;
-    grid-template-columns: 38px minmax(0,1fr) auto;
-    min-height: 68px;
-    padding: 12px 12px 12px 14px;
+    gap: 8px;
+    grid-template-columns: 32px minmax(0,1fr) auto;
+    min-height: 54px;
+    padding: 8px 10px 8px 12px;
   }
 
   .brand-mark {
@@ -160,9 +160,9 @@ export const widgetStyles = css`
     border-radius: 50%;
     color: #d84e39;
     display: inline-flex;
-    height: 38px;
+    height: 32px;
     justify-content: center;
-    width: 38px;
+    width: 32px;
   }
 
   .title-row {
@@ -173,7 +173,7 @@ export const widgetStyles = css`
   }
 
   .title {
-    font-size: 17px;
+    font-size: 15px;
     letter-spacing: -.02em;
     margin: 0;
   }
@@ -184,7 +184,7 @@ export const widgetStyles = css`
     font-size: 10px;
     font-weight: 750;
     letter-spacing: .06em;
-    padding: 3px 6px;
+    padding: 2px 5px;
     text-transform: uppercase;
   }
 
@@ -200,10 +200,10 @@ export const widgetStyles = css`
     border-radius: 50%;
     cursor: pointer;
     display: inline-flex;
-    height: 34px;
+    height: 30px;
     justify-content: center;
     padding: 0;
-    width: 34px;
+    width: 30px;
   }
 
   .body {
@@ -217,7 +217,7 @@ export const widgetStyles = css`
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 16px 14px 14px;
+    padding: 14px;
     scrollbar-width: none;
   }
 
@@ -238,9 +238,8 @@ export const widgetStyles = css`
     padding: 2px 1px 0;
   }
 
-  .intro-kicker,
   .field > span,
-  .prompt-picker legend {
+  .prompt-picker summary {
     color: var(--sw-color-text-muted);
     font-size: 10px;
     font-weight: 760;
@@ -248,13 +247,8 @@ export const widgetStyles = css`
     text-transform: uppercase;
   }
 
-  .intro-kicker {
-    display: block;
-    margin-bottom: 6px;
-  }
-
   .intro h3 {
-    font-size: 22px;
+    font-size: 20px;
     letter-spacing: -.035em;
     line-height: 1.08;
     margin: 0 0 6px;
@@ -269,7 +263,7 @@ export const widgetStyles = css`
 
   .intake {
     display: grid;
-    gap: 13px;
+    gap: 11px;
   }
 
   .field-group--route {
@@ -311,14 +305,27 @@ export const widgetStyles = css`
   }
 
   .prompt-picker {
-    border: 0;
-    margin: 0;
-    padding: 0;
+    background: rgba(255,255,255,.5);
+    border: 1px solid var(--sw-color-border-soft);
+    border-radius: 12px;
+    padding: 10px 11px;
   }
 
-  .prompt-picker legend {
-    margin-bottom: 8px;
-    padding: 0;
+  .prompt-picker summary {
+    cursor: pointer;
+    list-style-position: inside;
+  }
+
+  .prompt-picker summary span {
+    background: #ffe3da;
+    border-radius: 999px;
+    color: #9a3f30;
+    margin-left: 4px;
+    padding: 2px 6px;
+  }
+
+  .prompt-picker[open] summary {
+    margin-bottom: 9px;
   }
 
   .prompt-options {
@@ -615,8 +622,8 @@ export const widgetStyles = css`
   .panel--presentation {
     border-color: rgba(255,255,255,.78);
     box-shadow: 0 32px 100px rgba(69,36,80,.18), 0 12px 30px rgba(105,48,30,.1);
-    height: min(660px, calc(100dvh - 40px));
-    width: min(430px, 100%);
+    height: min(720px, calc(100dvh - 32px));
+    width: min(480px, 100%);
   }
 
   .panel--presentation .header {
